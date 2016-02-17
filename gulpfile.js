@@ -49,7 +49,7 @@ gulp.task('build', () => doBuild(gulp.src(src)));
 gulp.task('dev:build', ['build'], () => {
     gulp.watch(src, e => {
         if (e.type !== 'deleted')
-            doBuild(gulp.src(e.path));
+            doBuild(gulp.src(e.path, { base: 'src' }));
     });
 });
 
