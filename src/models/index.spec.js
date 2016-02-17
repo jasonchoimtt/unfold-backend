@@ -1,14 +1,9 @@
 import { sequelize } from './index';
+import { wait } from '../spec-utils';
 
-
-function resolve(fn) {
-    return function(done) {
-        fn().then(done, done.fail);
-    };
-}
 
 describe('Database operations', () => {
-    it('creates the database', resolve(async function() {
+    it('creates the database', wait(async function() {
         await sequelize.drop();
         await sequelize.sync();
     }));

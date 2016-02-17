@@ -1,6 +1,9 @@
 import Sequelize from 'sequelize';
 import { sequelize } from './sequelize';
 
+import * as bcrypt from 'bcrypt';
+import { fromCallback } from '../utils';
+
 
 export const User = sequelize.define('user', {
     id: {
@@ -8,28 +11,28 @@ export const User = sequelize.define('user', {
         allowNull: false,
         unique: true,
         primaryKey: true,
-        validate: { is: /^A-Za-z0-9_$/ },
+        validate: { is: /^[A-Za-z0-9_]+$/ },
     },
     password: {
         type: Sequelize.TEXT,
-        allowNull: false,
+        allowNull: true,
         validate: { notEmpty: true },
     },
     firstName: {
         type: Sequelize.STRING(255),
         field: 'first_name',
-        allowNull: false,
+        allowNull: true,
         validate: { notEmpty: true },
     },
     lastName: {
         type: Sequelize.STRING(255),
         field: 'last_name',
-        allowNull: false,
+        allowNull: true,
         validate: { notEmpty: true },
     },
     email: {
         type: Sequelize.STRING(255),
-        allowNull: false,
+        allowNull: true,
         validate: { isEmail: true },
     },
     verified: {
@@ -40,9 +43,26 @@ export const User = sequelize.define('user', {
     dateOfBirth: {
         type: Sequelize.DATE,
         field: 'date_of_birth',
-        allowNull: false,
+        allowNull: true,
     },
 }, {
     underscored: true,
+    getterMethods: {
+        active: function() {
+            return this.password !== null && this.email !== null;
+        },
+    },
+    instanceMethods: {
+        async setPassword(plaintext) {
+            let salt = await fromCallback(bcrypt.genSalt)(10);
+            let ciphertext = await fromCallback(bcrypt.hash)(plaintext, salt);
+            this.password = ciphertext;
+        },
+
+        async checkPassword(plaintext) {
+            // always returns false if this.passwprd === ''
+            return await fromCallback(bcrypt.compare)(plaintext, this.password);
+        },
+    },
 });
 

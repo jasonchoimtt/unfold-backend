@@ -53,14 +53,16 @@ gulp.task('dev:build', ['build'], () => {
     });
 });
 
-gulp.task('test', () => run('npm test').catch(e => { gutil.log(e.message); }));
+const npmBin = child_process.execSync('npm bin').toString().trim();;
+gulp.task('test', () => run('JASMINE_CONFIG_PATH=jasmine.json ' + npmBin + '/jasmine')
+                            .catch(e => { gutil.log(e.message); }));
 gulp.task('dev:test', ['test'], () => {
-    gulp.watch('lib/**/*.js', _.debounce(() => { gulp.start('test'); }, 500));
+    gulp.watch('lib/**/*.js', _.debounce(() => { gulp.start('test'); }, 250));
 });
 
 gulp.task('serve', () => { server.listen({ path: 'lib/index.js' }); });
 gulp.task('dev:serve', ['serve'], () =>  {
-    gulp.watch('lib/**/*.js', _.debounce(() => { server.restart(); }, 500));
+    gulp.watch('lib/**/*.js', _.debounce(() => { server.restart(); }, 250));
 });
 
 gulp.task('default', ['build']);

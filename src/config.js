@@ -7,4 +7,9 @@ export const Config = {
 
         return `postgres://unfold:unfold_icup@${ip}:5432/unfold`;
     })(),
+    jwtKey: 'unfold_development_key',
+    jwtOptions: {
+        algorithm: 'HS256',
+        expiresIn: '15m',
+    },
 };
