@@ -1,7 +1,6 @@
 import Sequelize from 'sequelize';
 import { sequelize } from './sequelize';
 
-
 export const Event = sequelize.define('event', {
     id: {
         type: Sequelize.UUID,
@@ -27,16 +26,26 @@ export const Event = sequelize.define('event', {
         allowNull: false,
         defaultValue: '',
     },
-    startsAt: {
+    startedAt: {
         type: Sequelize.DATE,
         field: 'starts_at',
         allowNull: false,
         defaultValue: Sequelize.NOW,
     },
-    endsAt: {
+    endedAt: {
         type: Sequelize.DATE,
         field: 'ends_at',
         allowNull: true, // null = on-going
+    },
+    timezone: {
+        type: Sequelize.DECIMAL(2, 2),
+        allowNull: false,
+        defaultValue: 0,
+    },
+    language: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue: 'en-us',
     },
 }, {
     underscored: true,

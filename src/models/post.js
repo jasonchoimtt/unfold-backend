@@ -3,9 +3,9 @@ import _ from 'lodash';
 import Sequelize from 'sequelize';
 import { sequelize } from './sequelize';
 
-import { PostData } from './PostData';
-import { User } from './User';
-import { Event } from './Event';
+import { PostData } from './post-data';
+import { User } from './user';
+import { Event } from './event';
 
 
 export const Post = sequelize.define('post', _.assign({}, PostData.attributes, {

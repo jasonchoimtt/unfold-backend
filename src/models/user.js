@@ -10,6 +10,11 @@ export const User = sequelize.define('user', {
         primaryKey: true,
         validate: { is: /^A-Za-z0-9_$/ },
     },
+    password: {
+        type: Sequelize.TEXT,
+        allowNull: false,
+        validate: { notEmpty: true },
+    },
     firstName: {
         type: Sequelize.STRING(255),
         field: 'first_name',

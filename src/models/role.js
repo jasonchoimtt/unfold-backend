@@ -1,8 +1,8 @@
 import Sequelize from 'sequelize';
 import { sequelize } from './sequelize';
 
-import { User } from './User';
-import { Event } from './Event';
+import { User } from './user';
+import { Event } from './event';
 
 
 export const Role = sequelize.define('role', {

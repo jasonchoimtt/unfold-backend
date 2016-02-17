@@ -3,8 +3,8 @@ import _ from 'lodash';
 // import Sequelize from 'sequelize';
 import { sequelize } from './sequelize';
 
-import { PostData } from './PostData';
-import { Event } from './Event';
+import { PostData } from './post-data';
+import { Event } from './event';
 
 
 export const Tick = sequelize.define('tick', PostData.attributes, {
