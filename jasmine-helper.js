@@ -1,3 +1,2 @@
-console.log('helper loaded');
 require('babel-polyfill');
-require('source-map-support');
+require('source-map-support/register');

@@ -42,7 +42,7 @@ function doBuild(src) {
                 console.log(err.codeFrame);
             this.emit('end', err); // eslint-disable-line no-invalid-this
         })
-        .pipe(sourcemaps.write('.'))
+        .pipe(sourcemaps.write('.', { sourceRoot: '/src' }))
         .pipe(gulp.dest('lib'));
 }
 gulp.task('build', () => doBuild(gulp.src(src)));
