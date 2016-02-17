@@ -1,11 +1,9 @@
-import { wait, runApp, request } from '../spec-utils';
+import { request } from '../spec-utils';
 
-describe('Server', () => {
-    beforeAll(wait(runApp));
-
-    it('just works!', wait(async function() {
+describe('Server', function() {
+    it('just works!', async function() {
         let resp = null;
         resp = await request.get('api/');
-        expect(resp.data.data).toEqual('It works!');
-    }));
+        expect(resp.data.data).to.equal('It works!');
+    });
 });

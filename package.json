@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "start": "NODE_ENV=production node lib/index.js",
-    "test": "JASMINE_CONFIG_PATH=jasmine.json jasmine",
+    "test": "mocha",
     "build": "gulp build"
   },
   "keywords": [],
@@ -28,6 +28,8 @@
     "babel-polyfill": "^6.5.0",
     "babel-preset-es2015": "^6.5.0",
     "babel-preset-stage-3": "^6.5.0",
+    "chai": "^3.5.0",
+    "dirty-chai": "^1.2.2",
     "eslint": "^1.10.3",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
@@ -35,7 +37,8 @@
     "gulp-eslint": "^1.1.1",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-util": "^3.0.7",
-    "jasmine": "^2.4.1",
+    "mocha": "^2.4.5",
+    "sinon": "^1.17.3",
     "source-map-support": "^0.4.0"
   }
 }

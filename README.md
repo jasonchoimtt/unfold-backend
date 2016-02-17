@@ -29,7 +29,7 @@ gulp dev # Runs the server with incremental building
 
 # To run tests:
 gulp build && npm test
-gulp dev:build dev:test # Runs tests on code changes
+gulp dev:build & mocha --watch # Runs tests on code changes
 ```
 
 We do not run the Node.js app in Docker for convenience of development.

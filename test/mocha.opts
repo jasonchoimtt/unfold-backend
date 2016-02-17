@@ -1,0 +1,3 @@
+--require lib/spec-helper.js
+lib/spec-utils.js
+lib/**/*.spec.js
