@@ -32,13 +32,13 @@ export const Event = sequelize.define('event', {
     },
     startedAt: {
         type: Sequelize.DATE,
-        field: 'starts_at',
+        field: 'started_at',
         allowNull: false,
         defaultValue: Sequelize.NOW,
     },
     endedAt: {
         type: Sequelize.DATE,
-        field: 'ends_at',
+        field: 'ended_at',
         allowNull: true, // null = on-going
     },
     timezone: {
@@ -61,6 +61,19 @@ export const Event = sequelize.define('event', {
     defaultScope: {
         include: [{ model: Role, as: 'roles' }],
     },
+    scopes: {
+        brief: {
+            attributes: { exclude: 'description' },
+        },
+    },
 });
 
-Event.hasMany(Role, { as: 'roles', foreignKey: { allowNull: false  }, onDelete: 'CASCADE' });
+Event.hasMany(Role, {
+    as: 'roles',
+    foreignKey: {
+        name: 'eventId',
+        field: 'event_id',
+        allowNull: false,
+    },
+    onDelete: 'CASCADE',
+});

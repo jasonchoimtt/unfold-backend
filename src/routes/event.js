@@ -1,4 +1,5 @@
 import express from 'express';
+import _ from 'lodash';
 import { ValidationError } from 'sequelize';
 
 import { parseJSON, catchError } from '../utils';
@@ -10,12 +11,14 @@ import { Event, Role } from '../models';
 export const router = express.Router();
 
 router.get('/', catchError(async function(req, res) {
-    let events = await Event.findAll();
+    let events = await Event.scope('brief').findAll();
     res.json({ data: events });
 }));
 
 router.post('/', requireLogin, parseJSON, catchError(async function(req, res) {
-    let event = Event.build(req.body.data);
+    let data = _.pick(req.body.data, 'title', 'location', 'tags', 'description',
+                      'startedAt', 'endedAt', 'timezone', 'language');
+    let event = Event.build(data);
     try {
         event = await event.save();
     } catch (err) {
@@ -42,15 +45,17 @@ router.get('/:id', catchError(async function(req, res) {
 router.put('/:id', requireLogin, parseJSON, catchError(async function(req, res) {
     let role = await Role.find({
         where: {
-            user_id: req.session.user.id,
+            userId: req.session.user.id,
             type: { $in: [Role.OWNER, Role.CONTRIBUTOR] },
         },
     });
     if (!role)
         throw new UnauthorizedError();
+    let data = _.pick(req.body.data, 'title', 'location', 'tags', 'description',
+                      'startedAt', 'endedAt', 'timezone', 'language');
     let event;
     try {
-        event = await Event.update(req.body.data, {
+        event = await Event.update(data, {
             where: { id: req.params.id },
         });
     } catch (err) {

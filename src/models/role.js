@@ -26,4 +26,11 @@ export const Role = sequelize.define('role', {
     },
 });
 
-Role.belongsTo(User, { foreignKey: { allowNull: false  }, onDelete: 'CASCADE' });
+Role.belongsTo(User, {
+    foreignKey: {
+        name: 'userId',
+        field: 'user_id',
+        allowNull: false,
+    },
+    onDelete: 'CASCADE',
+});

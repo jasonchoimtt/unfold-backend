@@ -12,7 +12,7 @@ describe('Event info endpoint', function() {
             location: 'Hong Kong',
         });
         await event.createRole({
-            user_id: user.id,
+            userId: user.id,
         });
     });
 
@@ -20,10 +20,11 @@ describe('Event info endpoint', function() {
         await Promise.all([event.destroy(), user.destroy()]);
     });
 
-    it('delivers a list of events with basic information', async function() {
+    it('delivers a brief list of events with basic information', async function() {
         let { data } = await request.get('/api/event/');
         expect(data.data).to.include.something
                 .with.property('title', 'Test Event');
+        expect(data.data).to.all.not.have.keys('roles', 'description');
     });
 
     it('delivers an event with information and roles', async function() {
@@ -54,7 +55,7 @@ describe('Event info endpoint', function() {
                 startedAt: new Date(2014, 9, 26),
                 endedAt: new Date(2015, 9, 26),
                 timezone: 8,
-                language: 'zh_HK',
+                language: 'zh-hk',
             },
         });
         let { data } = await request.get(`/api/event/${event.id}`);
@@ -65,7 +66,7 @@ describe('Event info endpoint', function() {
         expect(new Date(evt.startedAt).getTime()).to.equal(new Date(2014, 9, 26).getTime());
         expect(new Date(evt.endedAt).getTime()).to.equal(new Date(2015, 9, 26).getTime());
         expect(evt.timezone).to.equal(8);
-        expect(evt.language).to.equal('zh_HK');
+        expect(evt.language).to.equal('zh-hk');
     });
 
     it('requires authentication to create and change events', async function() {
