@@ -1,5 +1,7 @@
 import axios from 'axios';
+import _ from 'lodash';
 import { app } from './';
+import { User } from './models';
 
 
 /**
@@ -26,9 +28,32 @@ after(function() {
     });
 });
 
+function createAxios(options) {
+    return axios.create(_.defaults(options, {
+        baseURL: `http://${ip}:${port}/`,
+    }));
+}
+
 /**
  * Axios instance for test server endpoints.
  */
-export const request = axios.create({
-    baseURL: `http://${ip}:${port}/`,
-});
+export const request = createAxios();
+
+export async function createTestUser() {
+    let [user] = await User.findOrCreate({ where: { id: 'test_user' } });
+    await user.setPassword('test_pw');
+    user = await user.save();
+    let resp = await request.post('api/auth/', {
+        username: 'test_user',
+        password: 'test_pw',
+    });
+    return {
+        user,
+        token: resp.data.token,
+        requestAuth: createAxios({
+            headers: {
+                'Authorization': resp.data.token,
+            },
+        }),
+    };
+}

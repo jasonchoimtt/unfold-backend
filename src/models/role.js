@@ -2,11 +2,14 @@ import Sequelize from 'sequelize';
 import { sequelize } from './sequelize';
 
 import { User } from './user';
-import { Event } from './event';
 
 
 export const Role = sequelize.define('role', {
-    type: Sequelize.ENUM('OWNER', 'MODERATOR', 'TRANSLATOR'),
+    type: {
+        type: Sequelize.ENUM('OWNER', 'MODERATOR', 'CONTRIBUTOR', 'TRANSLATOR'),
+        allowNull: false,
+        defaultValue: 'OWNER',
+    },
 }, {
     underscored: true,
     indexes: [
@@ -15,8 +18,12 @@ export const Role = sequelize.define('role', {
     classMethods: {
         OWNER: 'OWNER',
         MODERATOR: 'MODERATOR',
+        CONTRIBUTOR: 'CONTRIBUTOR',
         TRANSLATOR: 'TRANSLATOR',
     },
+    defaultScope: {
+        include: [User],
+    },
 });
-Role.belongsTo(User);
-Role.belongsTo(Event);
+
+Role.belongsTo(User, { foreignKey: { allowNull: false  }, onDelete: 'CASCADE' });

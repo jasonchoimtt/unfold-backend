@@ -2,7 +2,9 @@ import Sequelize from 'sequelize';
 import { sequelize } from './sequelize';
 
 import * as bcrypt from 'bcrypt';
+import _ from 'lodash';
 import { fromCallback } from '../utils';
+import { plainGetterFactory } from './utils';
 
 
 export const User = sequelize.define('user', {
@@ -53,6 +55,8 @@ export const User = sequelize.define('user', {
         },
     },
     instanceMethods: {
+        get: plainGetterFactory(x => _.omit(x, 'password')),
+
         async setPassword(plaintext) {
             let salt = await fromCallback(bcrypt.genSalt)(10);
             let ciphertext = await fromCallback(bcrypt.hash)(plaintext, salt);

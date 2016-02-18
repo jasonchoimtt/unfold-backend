@@ -1,10 +1,14 @@
 import Sequelize from 'sequelize';
 import { sequelize } from './sequelize';
 
+import { Role } from './role';
+
+
 export const Event = sequelize.define('event', {
     id: {
         type: Sequelize.UUID,
         primaryKey: true,
+        defaultValue: Sequelize.UUIDV4,
     },
     title: {
         type: Sequelize.STRING(255),
@@ -38,7 +42,7 @@ export const Event = sequelize.define('event', {
         allowNull: true, // null = on-going
     },
     timezone: {
-        type: Sequelize.DECIMAL(2, 2),
+        type: Sequelize.DECIMAL(4, 2),
         allowNull: false,
         defaultValue: 0,
     },
@@ -49,6 +53,14 @@ export const Event = sequelize.define('event', {
     },
 }, {
     underscored: true,
+    instanceMethods: {
+        getURL() {
+            return `/api/event/${this.id}`;
+        },
+    },
+    defaultScope: {
+        include: [{ model: Role, as: 'roles' }],
+    },
 });
 
-
+Event.hasMany(Role, { as: 'roles', foreignKey: { allowNull: false  }, onDelete: 'CASCADE' });

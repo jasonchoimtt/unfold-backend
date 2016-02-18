@@ -5,23 +5,23 @@ import { User } from '../models';
 describe('Authentication endpoint', function() {
     before(async function() {
         let user = User.build({
-            id: 'test_user',
+            id: 'auth_test',
         });
         await user.setPassword('test_pw');
         await user.save();
     });
 
     after(async function() {
-        await User.destroy({ where: { id: 'test_user' } });
+        await User.destroy({ where: { id: 'auth_test' } });
     });
 
     it('authenticates by username and password', async function() {
         let resp = await request.post('api/auth/', {
-            username: 'test_user',
+            username: 'auth_test',
             password: 'test_pw',
         });
-        expect(resp.data.token).not.to.be.null();
-        expect(resp.data.exp).not.to.be.null();
+        expect(resp.data.token).not.to.be.null; // eslint-disable-line
+        expect(resp.data.exp).not.to.be.null; // eslint-disable-line
     });
 
     it('rejects a non-existent user', async function() {
@@ -40,7 +40,7 @@ describe('Authentication endpoint', function() {
     it('rejects an incorrect password', async function() {
         try {
             await request.post('api/auth/', {
-                username: 'test_user',
+                username: 'auth_test',
                 password: 'gibberish',
             });
         } catch (err) {
@@ -52,7 +52,7 @@ describe('Authentication endpoint', function() {
 
     it('renews a token', async function() {
         let resp = await request.post('api/auth/', {
-            username: 'test_user',
+            username: 'auth_test',
             password: 'test_pw',
         });
         let token = resp.data.token;
@@ -60,7 +60,7 @@ describe('Authentication endpoint', function() {
         resp = await request.post('api/auth/', {
             token: token,
         });
-        expect(resp.data.token).not.to.be.null();
+        expect(resp.data.token).not.to.be.null; // eslint-disable-line
         expect(resp.data.token).not.to.equal(token);
     });
 });

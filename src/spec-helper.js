@@ -2,6 +2,6 @@ import 'babel-polyfill';
 import 'source-map-support/register';
 
 import chai from 'chai';
-import dirtyChai from 'dirty-chai'; // ( ͡° ͜ʖ ͡°)
-chai.use(dirtyChai);
+import things from 'chai-things';
+chai.use(things);
 global.expect = chai.expect;

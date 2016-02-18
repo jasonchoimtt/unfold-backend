@@ -3,7 +3,7 @@ import * as jwt from 'jsonwebtoken';
 import { Config } from './config';
 import { User } from './models';
 import { UnauthorizedError, TokenExpiredError } from './errors';
-import { fromCallback } from './utils';
+import { fromCallback, catchError } from './utils';
 
 
 export async function parse(token) {
@@ -16,11 +16,11 @@ export /* promise */ function stringify(session) {
     });
 }
 
-export function authMiddleware(req, res, next) {
+export const authMiddleware = catchError(async function(req, res, next) {
     let token = req.get('Authorization');
     if (token) {
         try {
-            let session = parse(token);
+            let session = await parse(token);
             req.session = session;
         } catch (err) {
             if (err.name === 'TokenExpiredError')
@@ -30,7 +30,7 @@ export function authMiddleware(req, res, next) {
         }
     }
     return next();
-}
+});
 
 export function requireLogin(req, res, next) {
     if (!req.session)

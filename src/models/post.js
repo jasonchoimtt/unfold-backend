@@ -6,6 +6,7 @@ import { sequelize } from './sequelize';
 import { PostData } from './post-data';
 import { User } from './user';
 import { Event } from './event';
+import { plainGetterFactory } from './utils';
 
 
 export const Post = sequelize.define('post', _.assign({}, PostData.attributes, {
@@ -21,10 +22,7 @@ export const Post = sequelize.define('post', _.assign({}, PostData.attributes, {
 }), {
     underscored: true,
     instanceMethods: {
-        toJSON: function() {
-            return _.omitBy(this.prototype.toJSON.call(this),
-                            x => x.length > 4 && x.substr(0, 4) !== 'data');
-        },
+        get: plainGetterFactory(x => _.omitBy(x, y => y.length > 4 && x.substr(0, 4) !== 'data')),
     },
 });
 Post.belongsTo(Event);
