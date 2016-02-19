@@ -1,4 +1,5 @@
-import { request } from '../../spec-utils';
+import { request, createTestUser } from '../../spec-utils';
+import { Role } from '../../models';
 import { withCreateEvent } from './spec-utils';
 
 
@@ -86,5 +87,74 @@ describe('Event info endpoint', function() {
             }
             throw new Error('error not thrown');
         })();
+    });
+
+    describe('roles', function() {
+        let user2;
+        before(async function() {
+            user2 = (await createTestUser('test_user2')).user;
+        });
+        after(async function() {
+            await user2.destroy();
+        });
+
+        it('delivers a list of roles', async function() {
+            let { data } = await request.get(`/api/event/${event.id}/roles`);
+
+            expect(data.data).to.have.length(1);
+            expect(data.data[0]).to.have.deep.property('user.id', user.id);
+            expect(data.data[0]).to.have.property('type', Role.OWNER);
+        });
+
+        it('creates, changes and deletes a role', async function() {
+            // create
+            let { data } = await requestAuth.put(`/api/event/${event.id}/roles`, {
+                data: [{
+                    type: Role.CONTRIBUTOR,
+                    userId: user2.id,
+                }],
+            });
+
+            expect(data.data).to.have.length(2);
+            expect(data.data).to.include.something
+                .that.satisfies(x => x.user.id === user2.id && x.type === Role.CONTRIBUTOR);
+
+            // update
+            ({ data } = await requestAuth.put(`/api/event/${event.id}/roles`, {
+                data: [{
+                    type: Role.TRANSLATOR,
+                    userId: user2.id,
+                }],
+            }));
+
+            expect(data.data).to.have.length(2);
+            expect(data.data).to.include.something
+                .that.satisfies(x => x.user.id === user2.id && x.type === Role.TRANSLATOR);
+
+            // delete
+            ({ data } = await requestAuth.put(`/api/event/${event.id}/roles`, {
+                data: [{
+                    type: null,
+                    userId: user2.id,
+                }],
+            }));
+
+            expect(data.data).to.have.length(1);
+        });
+
+        it('requires authentiction to change roles', async function() {
+            try {
+                await request.put(`/api/event/${event.id}/roles`, {
+                    data: [{
+                        type: Role.TRANSLATOR,
+                        userId: user2.id,
+                    }],
+                });
+            } catch (err) {
+                expect(err.status).to.equal(401);
+                return;
+            }
+            throw new Error('no error thrown');
+        });
     });
 });

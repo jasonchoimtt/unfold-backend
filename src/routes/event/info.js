@@ -5,7 +5,7 @@ import { ValidationError } from 'sequelize';
 import { parseJSON, catchError } from '../../utils';
 import { BadRequestError, NotFoundError, UnauthorizedError } from '../../errors';
 import { requireLogin } from '../../auth';
-import { Event, Role } from '../../models';
+import { Event, Role, User } from '../../models';
 
 
 export const router = express.Router();
@@ -75,5 +75,58 @@ router.put('/:id', requireLogin, parseJSON, catchError(async function(req, res) 
     }
     res.json({
         data: event,
+    });
+}));
+
+router.get('/:id/roles', catchError(async function(req, res) {
+    let event = await Event.findById(req.params.id);
+    if (!event)
+        throw new NotFoundError();
+
+    let roles = await event.getRoles({
+        include: [User],
+    });
+    res.json({
+        data: roles,
+    });
+}));
+
+router.put('/:id/roles', requireLogin, parseJSON, catchError(async function(req, res) {
+    if (!await Event.build({ id: req.params.id })
+            .hasUserWithRole(req.session.user.id, Role.OWNER))
+        throw new UnauthorizedError();
+
+    if (!Array.isArray(req.body.data))
+        throw new BadRequestError();
+    try {
+        await Promise.all(req.body.data.map(role => {
+            if (role.type === null) {
+                return Role.destroy({
+                    where: {
+                        userId: role.userId,
+                        eventId: req.params.id,
+                    },
+                });
+            } else {
+                // Keep curly brace to avoid hitting babel bug
+                return Role.upsert({
+                    userId: role.userId,
+                    eventId: req.params.id,
+                    type: role.type,
+                });
+            }
+        }));
+    } catch (err) {
+        if (err instanceof ValidationError)
+            throw new BadRequestError();
+        else
+            throw err;
+    }
+
+    let roles = await Event.build({ id: req.params.id }).getRoles({
+        include: [User],
+    });
+    res.json({
+        data: roles,
     });
 }));

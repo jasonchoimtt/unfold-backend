@@ -39,12 +39,12 @@ function createAxios(options) {
  */
 export const request = createAxios();
 
-export async function createTestUser() {
-    let [user] = await User.findOrCreate({ where: { id: 'test_user' } });
+export async function createTestUser(id = 'test_user') {
+    let [user] = await User.findOrCreate({ where: { id: id } });
     await user.setPassword('test_pw');
     user = await user.save();
     let resp = await request.post('api/auth/', {
-        username: 'test_user',
+        username: id,
         password: 'test_pw',
     });
     return {
