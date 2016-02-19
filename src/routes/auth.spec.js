@@ -17,8 +17,10 @@ describe('Authentication endpoint', function() {
 
     it('authenticates by username and password', async function() {
         let resp = await request.post('api/auth/', {
-            username: 'auth_test',
-            password: 'test_pw',
+            data: {
+                username: 'auth_test',
+                password: 'test_pw',
+            },
         });
         expect(resp.data.token).not.to.be.null; // eslint-disable-line
         expect(resp.data.exp).not.to.be.null; // eslint-disable-line
@@ -27,8 +29,10 @@ describe('Authentication endpoint', function() {
     it('rejects a non-existent user', async function() {
         try {
             await request.post('api/auth/', {
-                username: 'invalid_user',
-                password: 'gibberish',
+                data: {
+                    username: 'invalid_user',
+                    password: 'gibberish',
+                },
             });
         } catch (err) {
             expect(err.status).to.equal(401);
@@ -40,8 +44,10 @@ describe('Authentication endpoint', function() {
     it('rejects an incorrect password', async function() {
         try {
             await request.post('api/auth/', {
-                username: 'auth_test',
-                password: 'gibberish',
+                data: {
+                    username: 'auth_test',
+                    password: 'gibberish',
+                },
             });
         } catch (err) {
             expect(err.status).to.equal(401);
@@ -52,13 +58,17 @@ describe('Authentication endpoint', function() {
 
     it('renews a token', async function() {
         let resp = await request.post('api/auth/', {
-            username: 'auth_test',
-            password: 'test_pw',
+            data: {
+                username: 'auth_test',
+                password: 'test_pw',
+            },
         });
         let token = resp.data.token;
         await new Promise(resolve => setTimeout(resolve, 1000));
         resp = await request.post('api/auth/', {
-            token: token,
+            data: {
+                token: token,
+            },
         });
         expect(resp.data.token).not.to.be.null; // eslint-disable-line
         expect(resp.data.token).not.to.equal(token);

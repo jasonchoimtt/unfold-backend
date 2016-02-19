@@ -44,8 +44,10 @@ export async function createTestUser(id = 'test_user') {
     await user.setPassword('test_pw');
     user = await user.save();
     let resp = await request.post('api/auth/', {
-        username: id,
-        password: 'test_pw',
+        data: {
+            username: id,
+            password: 'test_pw',
+        },
     });
     return {
         user,

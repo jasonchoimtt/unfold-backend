@@ -10,7 +10,7 @@ export function plainGetterFactory(fn) {
     return function(...args) {
         let ret = Instance.prototype.get.apply(this, args); // eslint-disable-line no-invalid-this
         if (typeof args[0] === 'object' && args[0].plain)
-            ret = fn(ret);
+            ret = fn(ret, args[0]);
         return ret;
     };
 }

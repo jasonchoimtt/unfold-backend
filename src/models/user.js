@@ -13,7 +13,7 @@ export const User = sequelize.define('user', {
         allowNull: false,
         unique: true,
         primaryKey: true,
-        validate: { is: /^[A-Za-z0-9_]+$/ },
+        validate: { is: /^[A-Za-z][A-Za-z0-9_]*$/ },
     },
     password: {
         type: Sequelize.TEXT,
@@ -51,7 +51,16 @@ export const User = sequelize.define('user', {
         },
     },
     instanceMethods: {
-        get: plainGetterFactory(x => _.omit(x, 'password')),
+        getURL() {
+            return `/api/user/${this.id}`;
+        },
+
+        get: plainGetterFactory((obj, options) => {
+            let attributes = ['id', 'firstName', 'lastName', 'createdAt'];
+            if (options.attributeSet === 'private')
+                attributes = attributes.concat(['email', 'dateOfBirth']);
+            return _.pick(obj, attributes);
+        }),
 
         async setPassword(plaintext) {
             let salt = await fromCallback(bcrypt.genSalt)(10);
