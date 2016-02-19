@@ -22,13 +22,11 @@ export const User = sequelize.define('user', {
     },
     firstName: {
         type: Sequelize.STRING(255),
-        field: 'first_name',
         allowNull: true,
         validate: { notEmpty: true },
     },
     lastName: {
         type: Sequelize.STRING(255),
-        field: 'last_name',
         allowNull: true,
         validate: { notEmpty: true },
     },
@@ -44,11 +42,9 @@ export const User = sequelize.define('user', {
     },
     dateOfBirth: {
         type: Sequelize.DATE,
-        field: 'date_of_birth',
         allowNull: true,
     },
 }, {
-    underscored: true,
     getterMethods: {
         active: function() {
             return this.password !== null && this.email !== null;

@@ -10,48 +10,40 @@ export const PostData = {
     attributes: {
         dataContent: {
             type: Sequelize.TEXT,
-            field: 'data_content',
             allowNull: true,
             validate: { notEmpty: true },
         },
         dataImage: {
             type: Sequelize.STRING(255),
-            field: 'data_image',
             allowNull: true,
             validate: { notEmpty: true },
         },
         dataLink: {
             type: Sequelize.STRING(255),
-            field: 'data_link',
             allowNull: true,
             validate: { notEmpty: true },
         },
         dataSite: {
             type: Sequelize.STRING(31),
-            field: 'data_site',
             allowNull: true,
             validate: { notEmpty: true },
         },
         dataSource: {
             type: Sequelize.STRING(255),
-            field: 'data_source',
             allowNull: true,
             validate: { notEmpty: true },
         },
         dataAuthor: {
             type: Sequelize.STRING(255),
-            field: 'data_author',
             allowNull: true,
             validate: { notEmpty: true },
         },
         dataPostedAt: {
             type: Sequelize.DATE,
-            field: 'data_posted_at',
             allowNull: true,
         },
         data: {
             type: Sequelize.JSONB,
-            field: 'data_extra',
             allowNull: true,
             get: function() {
                 let out = _.assign({}, this.getDataValue('data'));
@@ -61,6 +53,7 @@ export const PostData = {
                 return _.some(out, x => x) ? out : null;
             },
             set: function(value) {
+                value = value || {};
                 for (let field of attributeList)
                     this.setDataValue(_.camelCase(`data ${field}`), value[field]);
                 this.setDataValue('data', _.omit(value, ...attributeList));

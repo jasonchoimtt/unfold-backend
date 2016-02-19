@@ -2,6 +2,7 @@ import Sequelize from 'sequelize';
 import { sequelize } from './sequelize';
 
 import { Role } from './role';
+import { Post } from './post';
 
 
 export const Event = sequelize.define('event', {
@@ -32,13 +33,11 @@ export const Event = sequelize.define('event', {
     },
     startedAt: {
         type: Sequelize.DATE,
-        field: 'started_at',
         allowNull: false,
         defaultValue: Sequelize.NOW,
     },
     endedAt: {
         type: Sequelize.DATE,
-        field: 'ended_at',
         allowNull: true, // null = on-going
     },
     timezone: {
@@ -52,10 +51,22 @@ export const Event = sequelize.define('event', {
         defaultValue: 'en-us',
     },
 }, {
-    underscored: true,
     instanceMethods: {
         getURL() {
             return `/api/event/${this.id}`;
+        },
+        async hasUserWithRole(instance, type) {
+            let id = typeof instance.where === 'function' ? instance.where() : instance;
+            if (Array.isArray(type))
+                type = { $in: type };
+
+            let ret = await this.getRoles({
+                where: {
+                    userId: id,
+                    type: type,
+                },
+            });
+            return !!ret.length;
         },
     },
     defaultScope: {
@@ -72,7 +83,15 @@ Event.hasMany(Role, {
     as: 'roles',
     foreignKey: {
         name: 'eventId',
-        field: 'event_id',
+        allowNull: false,
+    },
+    onDelete: 'CASCADE',
+});
+
+Event.hasMany(Post, {
+    as: 'posts',
+    foreignKey: {
+        name: 'eventId',
         allowNull: false,
     },
     onDelete: 'CASCADE',

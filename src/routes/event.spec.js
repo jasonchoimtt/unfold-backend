@@ -1,8 +1,9 @@
+import _ from 'lodash';
 import { request, createTestUser } from '../spec-utils';
 import { Event } from '../models';
 
 
-describe('Event info endpoint', function() {
+async function withCreateEvent(callback) {
     let user, requestAuth, event;
     before(async function() {
         ({ user, requestAuth } = await createTestUser());
@@ -14,11 +15,21 @@ describe('Event info endpoint', function() {
         await event.createRole({
             userId: user.id,
         });
+
+        if (callback)
+            callback({ user, requestAuth, event });
     });
 
     after(async function() {
         await Promise.all([event.destroy(), user.destroy()]);
     });
+}
+
+
+describe('Event info endpoint', function() {
+    let user, requestAuth, event;
+
+    withCreateEvent(vars => ({ user, requestAuth, event } = vars));
 
     it('delivers a brief list of events with basic information', async function() {
         let { data } = await request.get('/api/event/');
@@ -35,7 +46,7 @@ describe('Event info endpoint', function() {
         expect(data.data.roles[0].user).not.to.have.property('password');
     });
 
-    it('creates a new event', async function() {
+    it('creates a new event with an owner role', async function() {
         let { data } = await requestAuth.post(`/api/event/`, {
             data: {
                 title: 'A New Event',
@@ -45,6 +56,8 @@ describe('Event info endpoint', function() {
 
         ({ data } = await request.get(`/api/event/${data.data.id}`));
         expect(data.data.title).to.equal('A New Event');
+        expect(data.data.roles).to.have.length(1);
+        expect(data.data.roles[0]).to.have.deep.property('user.id', user.id);
     });
 
     it('updates the event information', async function() {
@@ -97,5 +110,106 @@ describe('Event info endpoint', function() {
             }
             throw new Error('error not thrown');
         })();
+    });
+});
+
+
+describe('Timeline endpoint', function() {
+    let requestAuth, event;
+
+    withCreateEvent(vars => ({ requestAuth, event } = vars));
+
+    before(async function() {
+        // NOTE: Post.bulkCreate disallows setting createdAt for some reason
+        await Promise.all([
+            {
+                caption: 'Hello, World!',
+                createdAt: new Date(2014, 9, 26, 19),
+            },
+            {
+                caption: 'Best website ever',
+                data: { link: 'http://www.example.com/' },
+                createdAt: new Date(2014, 9, 26, 20),
+            },
+            {
+                data: { link: 'https://developer.mozilla.org/' },
+                createdAt: new Date(2014, 9, 26, 21),
+            },
+        ].map(x => event.createPost(x)));
+    });
+
+    it('delivers recent posts by default', async function() {
+        let { data } = await request.get(`/api/event/${event.id}/timeline`);
+
+        expect(data.data).to.have.length(3);
+        expect(data.data).to.deep.equal(
+                _.sortBy(data.data, x => new Date(x.createdAt).getTime() * -1));
+
+        expect(data.data).to.all.not.have.key('dataAuthor');
+    });
+
+    it('delivers posts in the specified period', async function() {
+        let { data } = await request.get(`/api/event/${event.id}/timeline`, {
+            params: {
+                begin: new Date(2014, 9, 26, 18),
+                end: new Date(2014, 9, 26, 20),
+            },
+        });
+
+        expect(data.data).to.have.length(1);
+        expect(data.data).to.all.satisfy(
+                x => new Date(x.createdAt).getTime() === new Date(2014, 9, 26, 19).getTime());
+    });
+
+    it('creates a new self post', async function() {
+        await requestAuth.post(`/api/event/${event.id}/timeline`, {
+            data: {
+                caption: 'I like self posts!',
+            },
+        });
+
+        let { data } = await request.get(`/api/event/${event.id}/timeline`);
+
+        expect(data.data[0]).to.have.property('caption', 'I like self posts!');
+        expect(data.data[0]).to.have.property('data').that.is.null; // eslint-disable-line
+    });
+
+    it('creates a new link post', async function() {
+        await requestAuth.post(`/api/event/${event.id}/timeline`, {
+            data: {
+                caption: 'A link',
+                data: { link: 'http://www.example.com/' },
+            },
+        });
+
+        let { data } = await request.get(`/api/event/${event.id}/timeline`);
+
+        expect(data.data[0]).to.have.property('caption', 'A link');
+        expect(data.data[0]).to.have.property('data')
+            .that.has.property('link', 'http://www.example.com/');
+    });
+
+    it('requires authentication to create posts', async function() {
+        try {
+            await request.post(`/api/event/${event.id}/timeline`, {
+                data: {
+                    caption: 'I like self posts!',
+                },
+            });
+        } catch (err) {
+            expect(err.status).to.equal(401);
+            return;
+        }
+        throw new Error('error not thrown');
+    });
+
+    it('rejects creating an empty post', async function() {
+        try {
+            await requestAuth.post(`/api/event/${event.id}/timeline`, { data: {} });
+        } catch (err) {
+            expect(err.status).to.equal(400);
+            return;
+        }
+        throw new Error('error not thrown');
     });
 });

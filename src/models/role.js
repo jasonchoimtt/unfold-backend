@@ -11,9 +11,8 @@ export const Role = sequelize.define('role', {
         defaultValue: 'OWNER',
     },
 }, {
-    underscored: true,
     indexes: [
-        { unique: true, fields: ['user_id', 'event_id'] },
+        { unique: true, fields: ['userId', 'eventId'] },
     ],
     classMethods: {
         OWNER: 'OWNER',
@@ -29,7 +28,6 @@ export const Role = sequelize.define('role', {
 Role.belongsTo(User, {
     foreignKey: {
         name: 'userId',
-        field: 'user_id',
         allowNull: false,
     },
     onDelete: 'CASCADE',
