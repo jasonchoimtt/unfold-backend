@@ -3,7 +3,7 @@ import { request, createTestUser } from '../spec-utils';
 import { Event } from '../models';
 
 
-async function withCreateEvent(callback) {
+function withCreateEvent(callback) {
     let user, requestAuth, event;
     before(async function() {
         ({ user, requestAuth } = await createTestUser());
@@ -22,6 +22,32 @@ async function withCreateEvent(callback) {
 
     after(async function() {
         await Promise.all([event.destroy(), user.destroy()]);
+    });
+}
+
+function withCreatePosts(input) {
+    before(async function() {
+        let { event } = input();
+        await event.update({
+            startedAt: new Date(2014, 9, 20),
+            endedAt: new Date(2014, 9, 29),
+        });
+        // NOTE: Post.bulkCreate disallows setting createdAt for some reason
+        await Promise.all([
+            {
+                caption: 'Hello, World!',
+                createdAt: new Date(2014, 9, 26, 19),
+            },
+            {
+                caption: 'Best website ever',
+                data: { link: 'http://www.example.com/' },
+                createdAt: new Date(2014, 9, 26, 20),
+            },
+            {
+                data: { link: 'https://developer.mozilla.org/' },
+                createdAt: new Date(2014, 9, 26, 21),
+            },
+        ].map(x => event.createPost(x)));
     });
 }
 
@@ -118,25 +144,7 @@ describe('Timeline endpoint', function() {
     let requestAuth, event;
 
     withCreateEvent(vars => ({ requestAuth, event } = vars));
-
-    before(async function() {
-        // NOTE: Post.bulkCreate disallows setting createdAt for some reason
-        await Promise.all([
-            {
-                caption: 'Hello, World!',
-                createdAt: new Date(2014, 9, 26, 19),
-            },
-            {
-                caption: 'Best website ever',
-                data: { link: 'http://www.example.com/' },
-                createdAt: new Date(2014, 9, 26, 20),
-            },
-            {
-                data: { link: 'https://developer.mozilla.org/' },
-                createdAt: new Date(2014, 9, 26, 21),
-            },
-        ].map(x => event.createPost(x)));
-    });
+    withCreatePosts(() => ({ event }));
 
     it('delivers recent posts by default', async function() {
         let { data } = await request.get(`/api/event/${event.id}/timeline`);
@@ -211,5 +219,36 @@ describe('Timeline endpoint', function() {
             return;
         }
         throw new Error('error not thrown');
+    });
+});
+
+
+describe('Timegram endpoint', function() {
+    let event;
+
+    withCreateEvent(vars => ({ event } = vars));
+    withCreatePosts(() => ({ event }));
+
+    it('delivers an overview timegram by default', async function() {
+        let { data } = await request.get(`/api/event/${event.id}/timegram`);
+
+        expect(data.data).to.have.length(9);
+        expect(data.span).to.have.property('resolution', 86400);
+        expect(data.data[2]).to.have.property('frequency', 3);
+    });
+
+    it('delivers a timegram in the specified period and resolution', async function() {
+        let { data } = await request.get(`/api/event/${event.id}/timegram`, {
+            params: {
+                begin: new Date(2014, 9, 26, 0),
+                end: new Date(2014, 9, 27, 0),
+                resolution: 3600,
+            },
+        });
+
+        expect(data.data).to.have.length(24);
+        [19, 20, 21].map(hour => {
+            expect(data.data[23 - hour]).to.have.property('frequency', 1);
+        });
     });
 });
