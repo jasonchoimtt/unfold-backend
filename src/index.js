@@ -1,3 +1,6 @@
+/**
+ * Entry point for the main Node.js app.
+ */
 import 'source-map-support/register';
 import 'babel-polyfill';
 
@@ -5,11 +8,15 @@ import express from 'express';
 
 import { router } from './routes';
 import { errorHandler } from './errors';
+import { router as scraperAdmin } from './scraper/admin';
 
 
 export const app = express();
 
 app.use('/api', router);
+
+app.use('/admin/kue', scraperAdmin);
+
 app.use(errorHandler);
 
 
@@ -22,4 +29,7 @@ if (require.main === module) {
                         ? 'production' : 'development';
         console.log("App listening in " + mode + " on " + ip + ":" + port);
     });
+
+    // Start the scraper on the same process for now
+    require('./scraper');
 }

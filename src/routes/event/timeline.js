@@ -6,6 +6,7 @@ import { parseJSON, catchError } from '../../utils';
 import { BadRequestError, NotFoundError, UnauthorizedError } from '../../errors';
 import { requireLogin } from '../../auth';
 import { Event, Role } from '../../models';
+import { ScrapLink } from '../../scraper/jobs';
 
 
 export const router = express.Router();
@@ -60,4 +61,11 @@ router.post('/:id/timeline', requireLogin, parseJSON, catchError(async function(
     res.json({
         data: post,
     });
+
+    if (data.data && data.data.link) {
+        ScrapLink({
+            link: data.data.link,
+            postId: post.id,
+        }).save(); // async
+    }
 }));

@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import { request } from '../../spec-utils';
 import { withCreateEvent, withCreatePosts } from './spec-utils';
+import { queue } from '../../scraper/queue';
 
 
 describe('Timeline endpoint', function() {
@@ -8,6 +9,14 @@ describe('Timeline endpoint', function() {
 
     withCreateEvent(vars => ({ requestAuth, event } = vars));
     withCreatePosts(() => ({ event }));
+
+    before(function() {
+        queue.testMode.enter();
+    });
+
+    after(function() {
+        queue.testMode.exit();
+    });
 
     it('delivers recent posts by default', async function() {
         let { data } = await request.get(`/api/event/${event.id}/timeline`);
@@ -43,9 +52,11 @@ describe('Timeline endpoint', function() {
 
         expect(data.data[0]).to.have.property('caption', 'I like self posts!');
         expect(data.data[0]).to.have.property('data').that.is.null; // eslint-disable-line
+
+        expect(queue.testMode.jobs).to.have.length(0);
     });
 
-    it('creates a new link post', async function() {
+    it('creates a new link post and requests scraping', async function() {
         await requestAuth.post(`/api/event/${event.id}/timeline`, {
             data: {
                 caption: 'A link',
@@ -58,6 +69,9 @@ describe('Timeline endpoint', function() {
         expect(data.data[0]).to.have.property('caption', 'A link');
         expect(data.data[0]).to.have.property('data')
             .that.has.property('link', 'http://www.example.com/');
+
+        expect(queue.testMode.jobs).to.have.length(1);
+        expect(queue.testMode.jobs[0]).to.have.property('type', 'Scrap Link');
     });
 
     it('requires authentication to create posts', async function() {
