@@ -53,9 +53,6 @@ export class Route {
     }
 
     match(parsed) {
-        if (typeof parsed === 'string')
-            parsed = urllib.parse(parsed);
-
         if (!this.protocol.test(parsed.protocol))
             return false;
 
@@ -69,6 +66,16 @@ export class Route {
 
         return _.extend(host, pathname);
     }
+
+    async dispatch(ctx, ...args) {
+        let params = this.match(ctx);
+        if (!params)
+            return ctx.next();
+
+        let subctx = _.extend({ params: params }, ctx);
+
+        return await this.handler(subctx, ...args);
+    }
 }
 
 export class Dispatcher {
@@ -76,32 +83,39 @@ export class Dispatcher {
         this.routes = [];
     }
 
-    define(url, handler) {
-        this.routes.push(new Route(url, handler));
+    use(url, handler) {
+        if (typeof url === 'object')
+            this.routes.push(url);
+        else
+            this.routes.push(new Route(url, handler));
     }
 
-    async dispatch(url, job) {
-        let parsed = urllib.parse(url);
+    async dispatch(ctx, ...args) {
+        if (typeof ctx === 'string') {
+            ctx = _.extend({
+                url: ctx,
+                next: () => { throw new Error('No route found'); },
+            }, urllib.parse(ctx));
+        }
 
-        let current = -1;
-        let ctx;
-        let next = async () => {
-            current += 1;
-            if (current >= this.routes.length)
-                throw new Error('No route found');
+        let nextToken = {};
+        let nextResolve;
 
-            let route = this.routes[current];
-            let match = route.match(parsed);
-            if (!match)
-                await next();
-            await route.handler(_.extend({ params: match }, ctx),
-                                job);
-        };
-        ctx = _.extend({
-            url: url,
-            next: next,
-        }, parsed);
+        let subctx = _.defaults({
+            next: () => nextResolve(nextToken),
+        }, ctx);
 
-        await next();
+
+        for (let route of this.routes) {
+            let nextPromise = new Promise(resolve => { nextResolve = resolve; });
+
+            let ret = await Promise.race([
+                route.dispatch(subctx, ...args),
+                nextPromise,
+            ]);
+            if (ret !== nextToken)
+                return ret;
+        }
+        ctx.next();
     }
 }
