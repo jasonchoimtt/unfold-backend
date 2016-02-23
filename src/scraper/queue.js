@@ -7,6 +7,10 @@ export const queue = kue.createQueue({
     redis: Config.redis,
 });
 
+queue.on('error', err => {
+    console.error(err.stack || err);
+});
+
 export { kue };
 
 export function nodeify(fn) {

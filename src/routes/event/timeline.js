@@ -47,7 +47,7 @@ router.post('/:id/timeline', requireLogin, parseJSON, catchError(async function(
         throw new UnauthorizedError();
 
     let data = _.pick(req.body.data, 'caption', 'data');
-    data.data = data.data && _.pick(data.data, 'link');
+    data.data = data.data && _.pick(data.data, 'url');
 
     let post;
     try {
@@ -62,9 +62,9 @@ router.post('/:id/timeline', requireLogin, parseJSON, catchError(async function(
         data: post,
     });
 
-    if (data.data && data.data.link) {
+    if (data.data && data.data.url) {
         ScrapLink({
-            link: data.data.link,
+            url: data.data.url,
             postId: post.id,
         }).save(); // async
     }

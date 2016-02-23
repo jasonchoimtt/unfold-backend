@@ -101,7 +101,7 @@
         "no-label-var": 1,
         "no-undef": 1,
         "no-unused-vars": [1, {"args": "none"}],
-        "no-use-before-define": 1,
+        "no-use-before-define": [1, "nofunc"],
         "max-len": [1, 99],
         "no-trailing-spaces": 1,
         "no-mixed-spaces-and-tabs": 1

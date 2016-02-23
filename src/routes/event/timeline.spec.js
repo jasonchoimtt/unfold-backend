@@ -60,7 +60,7 @@ describe('Timeline endpoint', function() {
         await requestAuth.post(`/api/event/${event.id}/timeline`, {
             data: {
                 caption: 'A link',
-                data: { link: 'http://www.example.com/' },
+                data: { url: 'http://www.example.com/' },
             },
         });
 
@@ -68,7 +68,7 @@ describe('Timeline endpoint', function() {
 
         expect(data.data[0]).to.have.property('caption', 'A link');
         expect(data.data[0]).to.have.property('data')
-            .that.has.property('link', 'http://www.example.com/');
+            .that.has.property('url', 'http://www.example.com/');
 
         expect(queue.testMode.jobs).to.have.length(1);
         expect(queue.testMode.jobs[0]).to.have.property('type', 'Scrap Link');

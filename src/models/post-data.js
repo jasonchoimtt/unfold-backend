@@ -3,7 +3,7 @@ import Sequelize from 'sequelize';
 import _ from 'lodash';
 
 
-const attributeList = ['content', 'image', 'link', 'site', 'source', 'author', 'postedAt'];
+const attributeList = ['content', 'image', 'url', 'site', 'source', 'author', 'createdAt'];
 
 export const PostData = {
     attributeList: attributeList,
@@ -18,7 +18,7 @@ export const PostData = {
             allowNull: true,
             validate: { notEmpty: true },
         },
-        dataLink: {
+        dataUrl: {
             type: Sequelize.STRING(255),
             allowNull: true,
             validate: { notEmpty: true },
@@ -34,11 +34,10 @@ export const PostData = {
             validate: { notEmpty: true },
         },
         dataAuthor: {
-            type: Sequelize.STRING(255),
+            type: Sequelize.JSONB,
             allowNull: true,
-            validate: { notEmpty: true },
         },
-        dataPostedAt: {
+        dataCreatedAt: {
             type: Sequelize.DATE,
             allowNull: true,
         },

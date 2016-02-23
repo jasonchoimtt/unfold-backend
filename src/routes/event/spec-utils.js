@@ -39,11 +39,11 @@ export function withCreatePosts(input) {
             },
             {
                 caption: 'Best website ever',
-                data: { link: 'http://www.example.com/' },
+                data: { url: 'http://www.example.com/' },
                 createdAt: new Date(2014, 9, 26, 20),
             },
             {
-                data: { link: 'https://developer.mozilla.org/' },
+                data: { url: 'https://developer.mozilla.org/' },
                 createdAt: new Date(2014, 9, 26, 21),
             },
         ].map(x => event.createPost(x)));
