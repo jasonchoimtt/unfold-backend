@@ -118,6 +118,6 @@ export class Dispatcher {
             if (ret !== nextToken)
                 return ret;
         }
-        ctx.next();
+        return ctx.next();
     }
 }
