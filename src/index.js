@@ -2,7 +2,6 @@
  * Entry point for the main Node.js app.
  */
 import 'source-map-support/register';
-import 'babel-polyfill';
 
 import express from 'express';
 

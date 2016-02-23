@@ -7,8 +7,8 @@ import { queue } from '../../scraper/queue';
 describe('Timeline endpoint', function() {
     let requestAuth, event;
 
-    withCreateEvent(vars => ({ requestAuth, event } = vars));
-    withCreatePosts(() => ({ event }));
+    withCreateEvent(vars => { ({ requestAuth, event } = vars); });
+    withCreatePosts(() => { return { event }; });
 
     before(function() {
         queue.testMode.enter();

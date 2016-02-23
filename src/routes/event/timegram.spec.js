@@ -5,8 +5,8 @@ import { withCreateEvent, withCreatePosts } from './spec-utils';
 describe('Timegram endpoint', function() {
     let event;
 
-    withCreateEvent(vars => ({ event } = vars));
-    withCreatePosts(() => ({ event }));
+    withCreateEvent(vars => { ({ event } = vars); });
+    withCreatePosts(() => { return { event }; });
 
     it('delivers an overview timegram by default', async function() {
         let { data } = await request.get(`/api/event/${event.id}/timegram`);

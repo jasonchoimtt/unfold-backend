@@ -46,7 +46,6 @@ describe('Scraper dispatcher', function() {
     });
 
     let noop = async () => {};
-    let passthrough = async ctx => { ctx.next(); };
 
     it('throws on no route', async function() {
         let dispatcher = new Dispatcher();
@@ -60,7 +59,7 @@ describe('Scraper dispatcher', function() {
 
     it('throws on missing route', async function() {
         let dispatcher = new Dispatcher();
-        dispatcher.use('//non-sense.org/', passthrough);
+        dispatcher.use('//non-sense.org/', noop);
         try {
             await dispatcher.dispatch('http://example.com/non-sense');
         } catch (err) {

@@ -110,7 +110,9 @@ export class Dispatcher {
             let nextPromise = new Promise(resolve => { nextResolve = resolve; });
 
             let ret = await Promise.race([
-                route.dispatch(subctx, ...args),
+                // There is a timing issue in which "return ctx.next()" will
+                // still make the dispatch promise resolve first
+                route.dispatch(subctx, ...args).then(x => x),
                 nextPromise,
             ]);
             if (ret !== nextToken)

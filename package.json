@@ -29,8 +29,7 @@
     "axios": "^0.9.1",
     "babel-core": "^6.5.1",
     "babel-eslint": "^5.0.0-beta9",
-    "babel-polyfill": "^6.5.0",
-    "babel-preset-es2015": "^6.5.0",
+    "babel-preset-es2015-node4": "^2.0.3",
     "babel-preset-stage-3": "^6.5.0",
     "chai": "^3.5.0",
     "chai-things": "^0.2.0",
@@ -45,5 +44,8 @@
     "sinon": "^1.17.3",
     "sinon-chai": "^2.8.0",
     "source-map-support": "^0.4.0"
+  },
+  "engines": {
+    "node": "^4.2.0"
   }
 }

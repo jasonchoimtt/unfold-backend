@@ -6,7 +6,7 @@ import { withCreateEvent } from './spec-utils';
 describe('Event info endpoint', function() {
     let user, requestAuth, event;
 
-    withCreateEvent(vars => ({ user, requestAuth, event } = vars));
+    withCreateEvent(vars => { ({ user, requestAuth, event } = vars); });
 
     it('delivers a brief list of events with basic information', async function() {
         let { data } = await request.get('/api/event/');
