@@ -15,11 +15,11 @@ export const router = express.Router();
  */
 router.get('/', catchError(async function(req, res) {
     let events = await Event.scope('brief').findAll();
-    res.json({ data: events });
+    res.json(events);
 }));
 
 router.post('/', requireLogin, parseJSON, catchError(async function(req, res) {
-    let data = _.pick(req.body.data, 'title', 'location', 'tags', 'description',
+    let data = _.pick(req.body, 'title', 'location', 'tags', 'description',
                       'startedAt', 'endedAt', 'timezone', 'language');
     data.roles = [{
         userId: req.session.user.id,
@@ -37,10 +37,7 @@ router.post('/', requireLogin, parseJSON, catchError(async function(req, res) {
         else
             throw err;
     }
-    res.json({
-        data: event,
-        url: event.getURL(),
-    });
+    res.json(event);
 }));
 
 router.get('/:id', catchError(async function(req, res) {
@@ -48,9 +45,7 @@ router.get('/:id', catchError(async function(req, res) {
     if (!event)
         throw new NotFoundError();
 
-    res.json({
-        data: event,
-    });
+    res.json(event);
 }));
 
 router.put('/:id', requireLogin, parseJSON, catchError(async function(req, res) {
@@ -59,7 +54,7 @@ router.put('/:id', requireLogin, parseJSON, catchError(async function(req, res) 
     if (!role)
         throw new UnauthorizedError();
 
-    let data = _.pick(req.body.data, 'title', 'location', 'tags', 'description',
+    let data = _.pick(req.body, 'title', 'location', 'tags', 'description',
                       'startedAt', 'endedAt', 'timezone', 'language');
 
     let event;
@@ -73,9 +68,7 @@ router.put('/:id', requireLogin, parseJSON, catchError(async function(req, res) 
         else
             throw err;
     }
-    res.json({
-        data: event,
-    });
+    res.json(event);
 }));
 
 router.get('/:id/roles', catchError(async function(req, res) {
@@ -86,9 +79,7 @@ router.get('/:id/roles', catchError(async function(req, res) {
     let roles = await event.getRoles({
         include: [User],
     });
-    res.json({
-        data: roles,
-    });
+    res.json(roles);
 }));
 
 router.put('/:id/roles', requireLogin, parseJSON, catchError(async function(req, res) {
@@ -96,10 +87,10 @@ router.put('/:id/roles', requireLogin, parseJSON, catchError(async function(req,
             .hasUserWithRole(req.session.user.id, Role.OWNER))
         throw new UnauthorizedError();
 
-    if (!Array.isArray(req.body.data))
+    if (!Array.isArray(req.body))
         throw new BadRequestError();
     try {
-        await Promise.all(req.body.data.map(role => {
+        await Promise.all(req.body.map(role => {
             if (role.type === null) {
                 return Role.destroy({
                     where: {
@@ -126,7 +117,5 @@ router.put('/:id/roles', requireLogin, parseJSON, catchError(async function(req,
     let roles = await Event.build({ id: req.params.id }).getRoles({
         include: [User],
     });
-    res.json({
-        data: roles,
-    });
+    res.json(roles);
 }));

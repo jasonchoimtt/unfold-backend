@@ -17,16 +17,15 @@ router.post('/', parseJSON, catchError(async function(req, res) {
     if (req.session)
         throw new BadRequestError();
 
-    let data = req.body.data || {};
     // We only need to ensure that they are not null;
     // other validations are done by Sequelize
     let fields = ['id', 'password', 'firstName', 'lastName', 'email', 'dateOfBirth'];
-    if (fields.some(x => !data[x]))
+    if (fields.some(x => !req.body[x]))
         throw new BadRequestError();
 
     let user;
     try {
-        user = await User.create(_.pick(data, fields));
+        user = await User.create(_.pick(req.body, fields));
     } catch (err) {
         // TODO: handle username clash gracefully
         if (err instanceof ValidationError)
@@ -35,10 +34,7 @@ router.post('/', parseJSON, catchError(async function(req, res) {
             throw err;
     }
 
-    res.json({
-        data: user,
-        url: user.getURL(),
-    });
+    res.json(user);
 }));
 
 router.get('/:id', catchError(async function(req, res) {
@@ -48,12 +44,10 @@ router.get('/:id', catchError(async function(req, res) {
 
     let privateAccess = req.session && req.session.user.id === user.id;
 
-    res.json({
-        data: user.get({
-            plain: true,
-            attributeSet: privateAccess ? 'private' : null,
-        }),
-    });
+    res.json(user.get({
+        plain: true,
+        attributeSet: privateAccess ? 'private' : null,
+    }));
 }));
 
 router.put('/:id', requireLogin, parseJSON, catchError(async function(req, res) {
@@ -65,7 +59,7 @@ router.put('/:id', requireLogin, parseJSON, catchError(async function(req, res) 
         throw new UnauthorizedError();
 
     // Well, proof of concept
-    let data = _.pick(req.body.data, 'firstName', 'lastName');
+    let data = _.pick(req.body, 'firstName', 'lastName');
 
     try {
         user = await user.update(data);
@@ -76,7 +70,5 @@ router.put('/:id', requireLogin, parseJSON, catchError(async function(req, res) 
             throw err;
     }
 
-    res.json({
-        data: user,
-    });
+    res.json(user);
 }));

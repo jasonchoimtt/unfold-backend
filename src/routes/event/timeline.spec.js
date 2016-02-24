@@ -19,55 +19,51 @@ describe('Timeline endpoint', function() {
     });
 
     it('delivers recent posts by default', async function() {
-        let { data } = await request.get(`/api/event/${event.id}/timeline`);
+        let resp = await request.get(`/api/event/${event.id}/timeline`);
 
-        expect(data.data).to.have.length(3);
-        expect(data.data).to.deep.equal(
-                _.sortBy(data.data, x => new Date(x.createdAt).getTime() * -1));
+        expect(resp.data.posts).to.have.length(3);
+        expect(resp.data.posts).to.deep.equal(
+                _.sortBy(resp.data.posts, x => new Date(x.createdAt).getTime() * -1));
 
-        expect(data.data).to.all.not.have.key('dataAuthor');
+        expect(resp.data.posts).to.all.not.have.key('dataAuthor');
     });
 
     it('delivers posts in the specified period', async function() {
-        let { data } = await request.get(`/api/event/${event.id}/timeline`, {
+        let resp = await request.get(`/api/event/${event.id}/timeline`, {
             params: {
                 begin: new Date(2014, 9, 26, 18),
                 end: new Date(2014, 9, 26, 20),
             },
         });
 
-        expect(data.data).to.have.length(1);
-        expect(data.data).to.all.satisfy(
+        expect(resp.data.posts).to.have.length(1);
+        expect(resp.data.posts).to.all.satisfy(
                 x => new Date(x.createdAt).getTime() === new Date(2014, 9, 26, 19).getTime());
     });
 
     it('creates a new self post', async function() {
         await requestAuth.post(`/api/event/${event.id}/timeline`, {
-            data: {
-                caption: 'I like self posts!',
-            },
+            caption: 'I like self posts!',
         });
 
-        let { data } = await request.get(`/api/event/${event.id}/timeline`);
+        let resp = await request.get(`/api/event/${event.id}/timeline`);
 
-        expect(data.data[0]).to.have.property('caption', 'I like self posts!');
-        expect(data.data[0]).to.have.property('data').that.is.null; // eslint-disable-line
+        expect(resp.data.posts[0]).to.have.property('caption', 'I like self posts!');
+        expect(resp.data.posts[0]).to.have.property('data').that.is.null; // eslint-disable-line
 
         expect(queue.testMode.jobs).to.have.length(0);
     });
 
     it('creates a new link post and requests scraping', async function() {
         await requestAuth.post(`/api/event/${event.id}/timeline`, {
-            data: {
-                caption: 'A link',
-                data: { url: 'http://www.example.com/' },
-            },
+            caption: 'A link',
+            data: { url: 'http://www.example.com/' },
         });
 
-        let { data } = await request.get(`/api/event/${event.id}/timeline`);
+        let resp = await request.get(`/api/event/${event.id}/timeline`);
 
-        expect(data.data[0]).to.have.property('caption', 'A link');
-        expect(data.data[0]).to.have.property('data')
+        expect(resp.data.posts[0]).to.have.property('caption', 'A link');
+        expect(resp.data.posts[0]).to.have.property('data')
             .that.has.property('url', 'http://www.example.com/');
 
         expect(queue.testMode.jobs).to.have.length(1);
@@ -77,9 +73,7 @@ describe('Timeline endpoint', function() {
     it('requires authentication to create posts', async function() {
         try {
             await request.post(`/api/event/${event.id}/timeline`, {
-                data: {
-                    caption: 'I like self posts!',
-                },
+                caption: 'I like self posts!',
             });
         } catch (err) {
             expect(err.status).to.equal(401);
@@ -90,7 +84,7 @@ describe('Timeline endpoint', function() {
 
     it('rejects creating an empty post', async function() {
         try {
-            await requestAuth.post(`/api/event/${event.id}/timeline`, { data: {} });
+            await requestAuth.post(`/api/event/${event.id}/timeline`, {});
         } catch (err) {
             expect(err.status).to.equal(400);
             return;

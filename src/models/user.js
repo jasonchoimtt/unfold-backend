@@ -46,15 +46,15 @@ export const User = sequelize.define('user', {
     },
 }, {
     getterMethods: {
-        active: function() {
+        active() {
             return this.password !== null && this.email !== null;
+        },
+
+        url() {
+            return `/api/user/${this.id}`;
         },
     },
     instanceMethods: {
-        getURL() {
-            return `/api/user/${this.id}`;
-        },
-
         get: plainGetterFactory((obj, options) => {
             let attributes = ['id', 'firstName', 'lastName', 'createdAt'];
             if (options.attributeSet === 'private')

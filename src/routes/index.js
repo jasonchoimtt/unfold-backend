@@ -15,5 +15,5 @@ router.use('/event', eventRouter);
 router.use('/user', userRouter);
 
 router.use('/', function(req, res) {
-    res.json({ data: 'It works!' });
+    res.json({ message: 'It works!' });
 });

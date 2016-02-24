@@ -8,12 +8,11 @@ import * as auth from '../auth';
 export const router = express.Router();
 
 router.post('/', parseJSON, catchError(async function(req, res) {
-    let data = req.body.data || {};
-    if (data.username && data.password) {
-        let { token, exp } = await auth.authenticate(data.username, data.password);
+    if (req.body.username && req.body.password) {
+        let { token, exp } = await auth.authenticate(req.body.username, req.body.password);
         res.json({ token, exp });
-    } else if (data.token) {
-        let { token, exp } = await auth.renew(data.token);
+    } else if (req.body.token) {
+        let { token, exp } = await auth.renew(req.body.token);
         res.json({ token, exp });
     } else {
         throw new BadRequestError();

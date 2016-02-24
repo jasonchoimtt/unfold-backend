@@ -25,19 +25,17 @@ describe('User endpoint', function() {
 
     describe('registration', function() {
         it('registers a new user', async function() {
-            let { data } = await request.post('/api/user', {
-                data: {
-                    id: 'lorem_user',
-                    password: '123456',
-                    firstName: 'Lorem',
-                    lastName: 'User',
-                    email: 'lorem.user@example.com',
-                    dateOfBirth: new Date(2000, 0, 1),
-                },
+            let resp = await request.post('/api/user', {
+                id: 'lorem_user',
+                password: '123456',
+                firstName: 'Lorem',
+                lastName: 'User',
+                email: 'lorem.user@example.com',
+                dateOfBirth: new Date(2000, 0, 1),
             });
 
-            expect(data.data).to.have.property('id', 'lorem_user');
-            expect(data.data).not.to.have.property('password');
+            expect(resp.data).to.have.property('id', 'lorem_user');
+            expect(resp.data).not.to.have.property('password');
         });
 
         it('rejects incomplete registration', async function() {
@@ -61,42 +59,40 @@ describe('User endpoint', function() {
     });
 
     it('displays a public user profile', async function() {
-        let { data } = await request.get('/api/user/test_user');
+        let resp = await request.get('/api/user/test_user');
 
-        expect(data.data).to.have.property('id', 'test_user');
-        expect(data.data).not.to.have.property('password');
-        expect(data.data).to.have.property('firstName', 'Test');
-        expect(data.data).to.have.property('lastName', 'User');
-        expect(data.data).not.to.have.property('email');
-        expect(data.data).not.to.have.property('dateOfBirth');
+        expect(resp.data).to.have.property('id', 'test_user');
+        expect(resp.data).not.to.have.property('password');
+        expect(resp.data).to.have.property('firstName', 'Test');
+        expect(resp.data).to.have.property('lastName', 'User');
+        expect(resp.data).not.to.have.property('email');
+        expect(resp.data).not.to.have.property('dateOfBirth');
     });
 
     it('displays a complete private user profile', async function() {
-        let { data } = await requestAuth.get('/api/user/test_user');
+        let resp = await requestAuth.get('/api/user/test_user');
 
-        expect(data.data).to.have.property('id', 'test_user');
-        expect(data.data).not.to.have.property('password');
-        expect(data.data).to.have.property('firstName', 'Test');
-        expect(data.data).to.have.property('lastName', 'User');
-        expect(data.data).to.have.property('email', 'test.user@example.com');
-        expect(data.data).to.have.property('dateOfBirth')
+        expect(resp.data).to.have.property('id', 'test_user');
+        expect(resp.data).not.to.have.property('password');
+        expect(resp.data).to.have.property('firstName', 'Test');
+        expect(resp.data).to.have.property('lastName', 'User');
+        expect(resp.data).to.have.property('email', 'test.user@example.com');
+        expect(resp.data).to.have.property('dateOfBirth')
                 .that.satisfies(x => new Date(x).getTime() === new Date(1999, 11, 31).getTime());
     });
 
     it('updates profile information', async function() {
         let { requestAuth } = await createTestUser('test_user2');
 
-        let { data } = await requestAuth.put('/api/user/test_user2', {
-            data: {
-                firstName: 'Hate',
-                lastName: 'You',
-            },
+        let resp = await requestAuth.put('/api/user/test_user2', {
+            firstName: 'Hate',
+            lastName: 'You',
         });
-        expect(data.data).to.have.property('firstName', 'Hate');
-        expect(data.data).to.have.property('lastName', 'You');
+        expect(resp.data).to.have.property('firstName', 'Hate');
+        expect(resp.data).to.have.property('lastName', 'You');
 
-        ({ data } = await request.get('/api/user/test_user2'));
-        expect(data.data).to.have.property('firstName', 'Hate');
-        expect(data.data).to.have.property('lastName', 'You');
+        resp = await request.get('/api/user/test_user2');
+        expect(resp.data).to.have.property('firstName', 'Hate');
+        expect(resp.data).to.have.property('lastName', 'You');
     });
 });

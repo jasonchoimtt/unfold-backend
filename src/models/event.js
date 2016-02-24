@@ -51,10 +51,12 @@ export const Event = sequelize.define('event', {
         defaultValue: 'en-us',
     },
 }, {
-    instanceMethods: {
-        getURL() {
+    getterMethods: {
+        url() {
             return `/api/event/${this.id}`;
         },
+    },
+    instanceMethods: {
         async hasUserWithRole(instance, type) {
             let id = typeof instance.where === 'function' ? instance.where() : instance;
             if (Array.isArray(type))

@@ -35,9 +35,7 @@ router.get('/:id/timeline', catchError(async function(req, res) {
             ['createdAt', 'DESC'],
         ],
     });
-    res.json({
-        data: data,
-    });
+    res.json({ posts: data });
 }));
 
 router.post('/:id/timeline', requireLogin, parseJSON, catchError(async function(req, res) {
@@ -46,7 +44,7 @@ router.post('/:id/timeline', requireLogin, parseJSON, catchError(async function(
     if (!role)
         throw new UnauthorizedError();
 
-    let data = _.pick(req.body.data, 'caption', 'data');
+    let data = _.pick(req.body, 'caption', 'data');
     data.data = data.data && _.pick(data.data, 'url');
 
     let post;
@@ -58,9 +56,7 @@ router.post('/:id/timeline', requireLogin, parseJSON, catchError(async function(
         else
             throw err;
     }
-    res.json({
-        data: post,
-    });
+    res.json(post);
 
     if (data.data && data.data.url) {
         ScrapLink({

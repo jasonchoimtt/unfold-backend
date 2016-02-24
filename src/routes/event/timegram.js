@@ -91,7 +91,7 @@ router.get('/:id/timegram', catchError(async function(req, res) {
     histogram.reverse();
 
     return res.json({
-        data: histogram,
+        timegram: histogram,
         span: {
             begin: dateOf(begin),
             end: dateOf(end),
