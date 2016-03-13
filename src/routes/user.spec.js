@@ -34,6 +34,7 @@ describe('User endpoint', function() {
                 dateOfBirth: new Date(2000, 0, 1),
             });
 
+            expect(resp.status).to.equal(201);
             expect(resp.data).to.have.property('id', 'lorem_user');
             expect(resp.data).not.to.have.property('password');
         });

@@ -37,7 +37,7 @@ router.post('/', requireLogin, parseJSON, catchError(async function(req, res) {
         else
             throw err;
     }
-    res.json(event);
+    res.status(201).json(event);
 }));
 
 router.get('/:id', catchError(async function(req, res) {
@@ -82,7 +82,7 @@ router.get('/:id/roles', catchError(async function(req, res) {
     res.json(roles);
 }));
 
-router.put('/:id/roles', requireLogin, parseJSON, catchError(async function(req, res) {
+router.patch('/:id/roles', requireLogin, parseJSON, catchError(async function(req, res) {
     if (!await Event.build({ id: req.params.id })
             .hasUserWithRole(req.session.user.id, Role.OWNER))
         throw new UnauthorizedError();

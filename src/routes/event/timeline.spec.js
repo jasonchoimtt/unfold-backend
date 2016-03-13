@@ -3,11 +3,10 @@ import { request } from '../../spec-utils';
 import { withCreateEvent, withCreatePosts } from './spec-utils';
 import { queue } from '../../scraper/queue';
 
-
 describe('Timeline endpoint', function() {
-    let requestAuth, event;
+    let requestAuth, event, user;
 
-    withCreateEvent(vars => { ({ requestAuth, event } = vars); });
+    withCreateEvent(vars => { ({ requestAuth, event, user } = vars); });
     withCreatePosts(() => { return { event }; });
 
     before(function() {
@@ -42,29 +41,40 @@ describe('Timeline endpoint', function() {
     });
 
     it('creates a new self post', async function() {
-        await requestAuth.post(`/api/event/${event.id}/timeline`, {
+        const expectData = data => {
+            expect(data).to.have.property('caption', 'I like self posts!');
+            expect(data).to.have.property('data').that.is.null; // eslint-disable-line
+            expect(data).to.have.deep.property('author.id', user.id);
+        };
+
+        let resp = await requestAuth.post(`/api/event/${event.id}/timeline`, {
             caption: 'I like self posts!',
         });
+        expect(resp.status).to.equal(201);
+        expectData(resp.data);
 
-        let resp = await request.get(`/api/event/${event.id}/timeline`);
-
-        expect(resp.data.posts[0]).to.have.property('caption', 'I like self posts!');
-        expect(resp.data.posts[0]).to.have.property('data').that.is.null; // eslint-disable-line
+        resp = await request.get(`/api/event/${event.id}/timeline`);
+        expectData(resp.data.posts[0]);
 
         expect(queue.testMode.jobs).to.have.length(0);
     });
 
     it('creates a new link post and requests scraping', async function() {
-        await requestAuth.post(`/api/event/${event.id}/timeline`, {
+        const expectData = data => {
+            expect(data).to.have.property('caption', 'A link');
+            expect(data).to.have.property('data')
+                .that.has.property('url', 'http://www.example.com/');
+            expect(data).to.have.deep.property('author.id', user.id);
+        };
+        let resp = await requestAuth.post(`/api/event/${event.id}/timeline`, {
             caption: 'A link',
             data: { url: 'http://www.example.com/' },
         });
+        expect(resp.status).to.equal(201);
+        expectData(resp.data);
 
-        let resp = await request.get(`/api/event/${event.id}/timeline`);
-
-        expect(resp.data.posts[0]).to.have.property('caption', 'A link');
-        expect(resp.data.posts[0]).to.have.property('data')
-            .that.has.property('url', 'http://www.example.com/');
+        resp = await request.get(`/api/event/${event.id}/timeline`);
+        expectData(resp.data.posts[0]);
 
         expect(queue.testMode.jobs).to.have.length(1);
         expect(queue.testMode.jobs[0]).to.have.property('type', 'Scrap Link');

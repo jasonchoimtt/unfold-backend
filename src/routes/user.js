@@ -34,7 +34,7 @@ router.post('/', parseJSON, catchError(async function(req, res) {
             throw err;
     }
 
-    res.json(user);
+    res.status(201).json(user);
 }));
 
 router.get('/:id', catchError(async function(req, res) {

@@ -5,7 +5,7 @@ import { ValidationError } from 'sequelize';
 import { parseJSON, catchError } from '../../utils';
 import { BadRequestError, NotFoundError, UnauthorizedError } from '../../errors';
 import { requireLogin } from '../../auth';
-import { Event, Role } from '../../models';
+import { User, Event, Role } from '../../models';
 import { ScrapLink } from '../../scraper/jobs';
 
 
@@ -34,6 +34,7 @@ router.get('/:id/timeline', catchError(async function(req, res) {
         order: [
             ['createdAt', 'DESC'],
         ],
+        include: [{ model: User, as: 'author' }],
     });
     res.json({ posts: data });
 }));
@@ -46,17 +47,21 @@ router.post('/:id/timeline', requireLogin, parseJSON, catchError(async function(
 
     let data = _.pick(req.body, 'caption', 'data');
     data.data = data.data && _.pick(data.data, 'url');
+    data.authorId = req.session.user.id;
 
     let post;
     try {
         post = await Event.build({ id: req.params.id }).createPost(data);
+        post = await post.reload({
+            include: [{ model: User, as: 'author' }],
+        });
     } catch (err) {
         if (err instanceof ValidationError)
             throw new BadRequestError();
         else
             throw err;
     }
-    res.json(post);
+    res.status(201).json(post);
 
     if (data.data && data.data.url) {
         ScrapLink({

@@ -28,6 +28,7 @@ describe('Event info endpoint', function() {
             title: 'A New Event',
             location: 'Mars',
         });
+        expect(resp.status).to.equal(201);
 
         resp = await request.get(`/api/event/${resp.data.id}`);
         expect(resp.data.title).to.equal('A New Event');
@@ -100,7 +101,7 @@ describe('Event info endpoint', function() {
 
         it('creates, changes and deletes a role', async function() {
             // create
-            let resp = await requestAuth.put(`/api/event/${event.id}/roles`, [
+            let resp = await requestAuth.patch(`/api/event/${event.id}/roles`, [
                 {
                     type: Role.CONTRIBUTOR,
                     userId: user2.id,
@@ -112,7 +113,7 @@ describe('Event info endpoint', function() {
                 .that.satisfies(x => x.user.id === user2.id && x.type === Role.CONTRIBUTOR);
 
             // update
-            resp = await requestAuth.put(`/api/event/${event.id}/roles`, [
+            resp = await requestAuth.patch(`/api/event/${event.id}/roles`, [
                 {
                     type: Role.TRANSLATOR,
                     userId: user2.id,
@@ -124,7 +125,7 @@ describe('Event info endpoint', function() {
                 .that.satisfies(x => x.user.id === user2.id && x.type === Role.TRANSLATOR);
 
             // delete
-            resp = await requestAuth.put(`/api/event/${event.id}/roles`, [
+            resp = await requestAuth.patch(`/api/event/${event.id}/roles`, [
                 {
                     type: null,
                     userId: user2.id,
@@ -136,7 +137,7 @@ describe('Event info endpoint', function() {
 
         it('requires authentiction to change roles', async function() {
             try {
-                await request.put(`/api/event/${event.id}/roles`, [
+                await request.patch(`/api/event/${event.id}/roles`, [
                     {
                         type: Role.TRANSLATOR,
                         userId: user2.id,

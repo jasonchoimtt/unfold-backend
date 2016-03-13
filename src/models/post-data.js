@@ -46,8 +46,11 @@ export const PostData = {
             allowNull: true,
             get: function() {
                 let out = _.assign({}, this.getDataValue('data'));
-                for (let field of attributeList)
-                    out[field] = this.getDataValue(_.camelCase(`data ${field}`));
+                for (let field of attributeList) {
+                    let val = this.getDataValue(_.camelCase(`data ${field}`));
+                    if (val !== null)
+                        out[field] = val;
+                }
 
                 return _.some(out, x => x) ? out : null;
             },
