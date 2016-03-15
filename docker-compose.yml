@@ -1,12 +1,14 @@
-database:
-  image: postgres:9.5
-  ports:
-    - "5432:5432"
-  environment:
-    - POSTGRES_DB=unfold
-    - POSTGRES_USER=unfold
-    - POSTGRES_PASSWORD=unfold_icup
-redis:
-  image: redis:3.0
-  ports:
-    - "6379:6379"
+version: '2'
+services:
+  database:
+    image: postgres:9.5
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=unfold
+      - POSTGRES_USER=unfold
+      - POSTGRES_PASSWORD=unfold_icup
+  redis:
+    image: redis:3.0
+    ports:
+      - "6379:6379"

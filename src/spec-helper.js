@@ -1,4 +1,5 @@
-import 'source-map-support/register';
+if (process.env.NODE_ENV !== 'production')
+    require('source-map-support/register');
 
 import chai from 'chai';
 import things from 'chai-things';

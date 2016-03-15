@@ -45,7 +45,10 @@ function doBuild(src) {
         .pipe(sourcemaps.write('.', { sourceRoot: '/src' }))
         .pipe(gulp.dest('lib'));
 }
-gulp.task('build', () => doBuild(gulp.src(src)));
+gulp.task('build', () => {
+    child_process.execSync('rm -rf lib');
+    return doBuild(gulp.src(src));
+});
 gulp.task('dev:build', ['build'], () => {
     gulp.watch(src, e => {
         if (e.type !== 'deleted')

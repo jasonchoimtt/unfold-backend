@@ -1,7 +1,8 @@
 /**
  * Entry point for the main Node.js app.
  */
-import 'source-map-support/register';
+if (process.env.NODE_ENV !== 'production')
+    require('source-map-support/register');
 
 import express from 'express';
 
