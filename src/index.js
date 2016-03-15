@@ -13,6 +13,9 @@ import { router as scraperAdmin } from './scraper/admin';
 
 export const app = express();
 
+app.set('x-powered-by', false);
+app.set('trust proxy', true);
+
 app.use('/api', router);
 
 app.use('/admin/kue', scraperAdmin);

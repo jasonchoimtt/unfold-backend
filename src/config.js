@@ -14,6 +14,11 @@ export const Config = {
         expiresIn: '15m',
     },
 
+    accessControl: {
+        allowOrigin: process.env.ACCESS_CONTROL_ALLOW_ORIGIN || '*',
+        maxAge: process.env.ACCESS_CONTROL_MAX_AGE || 604800, // 1 week
+    },
+
     facebook: {
         appId: process.env.FACEBOOK_APP_ID,
         appSecret: process.env.FACEBOOK_APP_SECRET,
