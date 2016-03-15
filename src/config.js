@@ -5,16 +5,19 @@ import _ from 'lodash';
 let ip = url.parse(process.env.DOCKER_HOST || '').hostname || '127.0.0.1';
 
 export const Config = {
-    database: `postgres://unfold:unfold_icup@${ip}:5432/unfold`,
-    redis: `redis://${ip}:6379/`,
+    database: process.env.DATABASE_URL || `postgres://unfold:unfold_icup@${ip}:5432/unfold`,
+    redis: process.env.REDIS_URL || `redis://${ip}:6379/`,
 
-    jwtKey: 'unfold_development_key',
+    jwtKey: process.env.JWT_KEY || 'unfold_development_key',
     jwtOptions: {
         algorithm: 'HS256',
         expiresIn: '15m',
     },
 
-    facebook: {},
+    facebook: {
+        appId: process.env.FACEBOOK_APP_ID,
+        appSecret: process.env.FACEBOOK_APP_SECRET,
+    },
 };
 
 try {
