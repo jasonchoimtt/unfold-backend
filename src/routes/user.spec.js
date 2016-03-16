@@ -37,6 +37,14 @@ describe('User endpoint', function() {
             expect(resp.status).to.equal(201);
             expect(resp.data).to.have.property('id', 'lorem_user');
             expect(resp.data).not.to.have.property('password');
+
+            resp = await request.post('/api/auth', {
+                username: 'lorem_user',
+                password: '123456',
+            });
+
+            expect(resp.data).to.have.property('token');
+            expect(resp.data).to.have.property('exp');
         });
 
         it('rejects incomplete registration', async function() {
@@ -91,6 +99,7 @@ describe('User endpoint', function() {
         });
         expect(resp.data).to.have.property('firstName', 'Hate');
         expect(resp.data).to.have.property('lastName', 'You');
+        expect(resp.data).to.have.property('email');
 
         resp = await request.get('/api/user/test_user2');
         expect(resp.data).to.have.property('firstName', 'Hate');

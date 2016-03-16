@@ -25,7 +25,9 @@ router.post('/', parseJSON, catchError(async function(req, res) {
 
     let user;
     try {
-        user = await User.create(_.pick(req.body, fields));
+        user = User.build(_.pick(req.body, fields));
+        await user.setPassword(req.body.password);
+        await user.save();
     } catch (err) {
         // TODO: handle username clash gracefully
         if (err instanceof ValidationError)
@@ -70,5 +72,10 @@ router.put('/:id', requireLogin, parseJSON, catchError(async function(req, res) 
             throw err;
     }
 
-    res.json(user);
+    let privateAccess = req.session && req.session.user.id === user.id;
+
+    res.json(user.get({
+        plain: true,
+        attributeSet: privateAccess ? 'private' : null,
+    }));
 }));
