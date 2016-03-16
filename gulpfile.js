@@ -9,22 +9,8 @@ var eslint = require('gulp-eslint');
 var sourcemaps = require('gulp-sourcemaps');
 var server = require('gulp-develop-server');
 
-
-function run(command, options) {
-    options = _.extend({ stdio: 'inherit' }, options);
-
-    return new Promise((resolve, reject) => {
-        var child = child_process.spawn('sh', ['-c', command], options);
-        child.on('error', reject);
-        child.on('close', code => {
-            if (code !== 0) {
-                reject('Process exited with code ' + code);
-            } else {
-                resolve();
-            }
-        });
-    });
-}
+var through2 = require('through2');
+var docco = require('gulp-docco');
 
 
 const src = 'src/**/*.js';
@@ -59,6 +45,38 @@ gulp.task('dev:build', ['build'], () => {
 gulp.task('serve', () => { server.listen({ path: 'lib/index.js' }); });
 gulp.task('dev:serve', ['serve'], () =>  {
     gulp.watch('lib/**/*.js', _.debounce(() => { server.restart(); }, 250));
+});
+
+const docsSrc = 'src/docs/**/*.doc.js';
+
+gulp.task('docs', () => {
+    return gulp.src(docsSrc)
+        .pipe(through2.obj((file, encoding, callback) => {
+            var contents = file.contents.toString(encoding);
+
+            var path = file.path.replace('src/', 'lib/');
+            child_process.execFile('node', [path, '--json'], {
+                maxBuffer: '1024 * 1024',
+            }, function(err, stdout) {
+                if (err) {
+                    callback(err);
+                    return;
+                }
+                var output = JSON.parse(stdout);
+                _.forEach(output, function(out, title) {
+                    out = '```\n' + out + '\n```';
+                    out = out.replace(/^/mg, '// ');
+                    contents = contents.replace(
+                        new RegExp('^\\/\\*\\s*!request\\s+' + title + '\\s*\\*\\/$', 'm'),
+                        out
+                    );
+                });
+                file.contents = new Buffer(contents, encoding);
+                callback(null, file);
+            });
+        }))
+        .pipe(docco())
+        .pipe(gulp.dest('lib/docs'));
 });
 
 gulp.task('default', ['build']);
