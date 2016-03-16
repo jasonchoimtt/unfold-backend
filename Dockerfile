@@ -13,6 +13,7 @@ WORKDIR $APP_ROOT
 
 COPY package.json $APP_ROOT/
 # Split it to avoid OOM =(
+RUN npm config set jobs 1
 RUN npm install bcrypt || (cat npm-debug.log && false)
 RUN npm install || (cat npm-debug.log && false)
 
