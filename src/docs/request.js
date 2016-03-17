@@ -86,5 +86,5 @@ export default function(logger) {
             send();
             return err.data;
         }
-    }
+    };
 }
