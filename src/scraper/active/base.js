@@ -18,10 +18,22 @@ import _ from 'lodash';
  */
 function matcher(pattern, separator = '/') {
     let keys = [];
-    let regexp = pathToRegexp(pattern.replace(separator, '/'), keys);
+
+    // Need global match
+    separator = separator === '/' ? /\//g : /\./g;
+
+    pattern = pattern.replace(separator, '/');
+    if (pattern[0] !== '/')
+        pattern = '/' + pattern;
+
+    let regexp = pathToRegexp(pattern, keys);
     return {
         match(str) {
-            let match = regexp.exec(str.replace(separator, '/'));
+            str = str.replace(separator, '/');
+            if (str[0] !== '/')
+                str = '/' + str;
+
+            let match = regexp.exec(str);
             if (!match)
                 return null;
 

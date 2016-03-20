@@ -43,6 +43,11 @@ describe('Scraper dispatcher', function() {
         matches('http://127.0.0.1/').to.deep.equal({});
         matches('http://127.0.0.1/haha/yaya')
             .to.deep.equal({ path: 'haha/yaya' });
+
+        // Catch all
+        route = new Route('//:domain+/:path*');
+        matches('http://hello-world.online/').to.be.ok; // eslint-disable-line
+        matches('http://hello-world.online/').to.be.ok; // eslint-disable-line
     });
 
     let noop = async () => {};
