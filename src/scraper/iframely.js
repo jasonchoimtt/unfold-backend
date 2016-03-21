@@ -13,8 +13,6 @@ const iframelyConfig = {
 
 
 // Monkey-patch the config object
-require('iframely/utils');
-
-_.extend(GLOBAL.CONFIG, iframelyConfig);
+GLOBAL.CONFIG = _.extend({}, require('iframely/config'), iframelyConfig);
 
 export const iframely = require('iframely');

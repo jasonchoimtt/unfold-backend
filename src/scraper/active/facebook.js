@@ -1,5 +1,6 @@
 import { Dispatcher } from './base';
 import { client } from '../common/facebook';
+import { PostData } from '../../models/post-data';
 
 
 export const dispatcher = new Dispatcher();
@@ -18,18 +19,20 @@ dispatcher.use('//(www.)?facebook.com/:profile/posts/:id', async function(ctx, j
         },
     }).backoff().data();
 
-    console.log({
-        content: post.message,
+    return {
+        rel: PostData.TEXT, // TODO
+
+        // TODO: dimensions
         image: post.object_id, // TODO
+        title: post.message,
+
         url: `https://www.facebook.com/${profile.id}_${ctx.params.id}`,
 
         site: 'Facebook',
-        source: profile.username,
-        author: {
-            name: profile.name,
-            url: profile.link,
-            avatar: profile.picture.data.url,
-        },
+        // TODO: siteImage
+        section: profile.username,
+        author: profile.name,
+        authorImage: profile.picture.data.url,
         createdAt: post.created_time,
-    });
+    };
 });

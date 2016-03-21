@@ -17,6 +17,6 @@ export function nodeify(fn) {
     return function(job, done) {
         let ret = fn(job);
         if (ret && typeof ret.then !== 'undefined' && typeof ret.catch !== 'undefined')
-            ret.then(done, done);
+            ret.then(result => { done(null, result); }, err => { done(err); });
     };
 }

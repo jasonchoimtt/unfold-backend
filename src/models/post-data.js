@@ -3,11 +3,24 @@ import Sequelize from 'sequelize';
 import _ from 'lodash';
 
 
-const attributeList = ['content', 'image', 'url', 'site', 'source', 'author', 'createdAt'];
+const attributeList = [
+    'rel', 'title', 'content', 'image', 'url',
+    'site', 'section', 'author', 'createdAt',
+];
 
 export const PostData = {
     attributeList: attributeList,
     attributes: {
+        dataRel: {
+            type: Sequelize.STRING(31),
+            allowNull: true,
+            validate: { notEmpty: true },
+        },
+        dataTitle: {
+            type: Sequelize.TEXT,
+            allowNull: true,
+            validate: { notEmpty: true },
+        },
         dataContent: {
             type: Sequelize.TEXT,
             allowNull: true,
@@ -28,7 +41,7 @@ export const PostData = {
             allowNull: true,
             validate: { notEmpty: true },
         },
-        dataSource: {
+        dataSection: {
             type: Sequelize.STRING(255),
             allowNull: true,
             validate: { notEmpty: true },
@@ -62,4 +75,8 @@ export const PostData = {
             },
         },
     },
+    TEXT: 'TEXT',
+    IMAGE: 'IMAGE',
+    EMBED: 'EMBED',
+    SPECIAL: 'SPECIAL',
 };

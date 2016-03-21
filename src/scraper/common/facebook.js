@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { Provider } from './base';
-import { client as baseClient } from '../client';
+import { client as baseClient } from '../common/client';
 import { Config } from '../../config';
 
 
