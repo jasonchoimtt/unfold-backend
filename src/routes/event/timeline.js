@@ -40,7 +40,7 @@ router.get('/:id/timeline', catchError(async function(req, res) {
 }));
 
 router.post('/:id/timeline', requireLogin, parseJSON, catchError(async function(req, res) {
-    let role = await Event.build({ id: req.params.id })
+    let role = await Event.build({ id: req.params.id }, { hasNewRecord: false })
                 .hasUserWithRole(req.session.user.id, [Role.OWNER, Role.CONTRIBUTOR]);
     if (!role)
         throw new UnauthorizedError();
@@ -51,7 +51,7 @@ router.post('/:id/timeline', requireLogin, parseJSON, catchError(async function(
 
     let post;
     try {
-        post = await Event.build({ id: req.params.id }).createPost(data);
+        post = await Event.build({ id: req.params.id }, { isNewRecord: false }).createPost(data);
         post = await post.reload({
             include: [{ model: User, as: 'author' }],
         });

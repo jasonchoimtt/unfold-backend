@@ -49,7 +49,7 @@ router.get('/:id', catchError(async function(req, res) {
 }));
 
 router.put('/:id', requireLogin, parseJSON, catchError(async function(req, res) {
-    let role = await Event.build({ id: req.params.id })
+    let role = await Event.build({ id: req.params.id }, { isNewRecord: false })
                 .hasUserWithRole(req.session.user.id, [Role.OWNER, Role.CONTRIBUTOR]);
     if (!role)
         throw new UnauthorizedError();
@@ -83,7 +83,7 @@ router.get('/:id/roles', catchError(async function(req, res) {
 }));
 
 router.patch('/:id/roles', requireLogin, parseJSON, catchError(async function(req, res) {
-    if (!await Event.build({ id: req.params.id })
+    if (!await Event.build({ id: req.params.id }, { isNewRecord: false })
             .hasUserWithRole(req.session.user.id, Role.OWNER))
         throw new UnauthorizedError();
 
@@ -114,7 +114,7 @@ router.patch('/:id/roles', requireLogin, parseJSON, catchError(async function(re
             throw err;
     }
 
-    let roles = await Event.build({ id: req.params.id }).getRoles({
+    let roles = await Event.build({ id: req.params.id }, { hasNewRecord: false }).getRoles({
         include: [User],
     });
     res.json(roles);
