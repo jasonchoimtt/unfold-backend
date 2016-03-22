@@ -5,9 +5,9 @@ import _ from 'lodash';
 const SEC = 1000;
 
 /**
- * Scrap the provided link and store it to the target database row.
+ * Scrap the provided link and optionally store it to the target database row.
  *
- * Either `postId` or `tickId` must be provided.
+ * Provide either `postId` or `tickId` to persist data to database.
  *
  * @param {Object} job
  * @param {String} job.url the link to scrap

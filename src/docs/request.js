@@ -16,7 +16,7 @@ export default function(logger) {
         options = options || {};
 
         // Remove indent
-        req = req.replace(/^\s*\n|\n\s*$/, '');
+        req = req.replace(/^\s*\n|\n\s*$/g, '');
         req = req.split('\n');
         let indent = req.reduce((min, next) => {
             if (!next.length)
@@ -39,7 +39,7 @@ export default function(logger) {
 
         // Query string
         let params = '';
-        while (req[0].match(/^[?&]/))
+        while (req && /^[?&]/.exec(req[0]))
             params += req.shift();
         if (params)
             options.url += params;
