@@ -1,6 +1,6 @@
 import axios from 'axios';
 import _ from 'lodash';
-import { app } from './';
+import { server } from './';
 import { User } from './models';
 
 
@@ -9,11 +9,10 @@ import { User } from './models';
  */
 const port = process.env.PORT || 3001;
 const ip = process.env.IP || '0.0.0.0';
-let server = null;
 
 before(function() {
     return new Promise((resolve, reject) => {
-        server = app.listen(port, ip);
+        server.listen(port, ip);
         server.on('listening', resolve);
         server.on('error', reject);
     });
