@@ -18,7 +18,7 @@ describe('Model hooks', function() {
         await deferred;
         expect(subs).to.have.been.calledOnce; // eslint-disable-line
 
-        let e = subs.firstCall.args[0];
+        let e = JSON.parse(subs.firstCall.args[0]);
         expect(e).to.have.property('resource', 'post');
         expect(e).to.have.property('type', 'created');
         expect(e).to.have.deep.property('data.caption', 'Hate you');

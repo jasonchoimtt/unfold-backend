@@ -25,7 +25,9 @@ export const UnauthorizedError = errorFactory('UnauthorizedError', 401, 'Unautho
 export const NotFoundError = errorFactory('NotFoundError', 404, 'Not found');
 
 export function errorHandler(err, req, res, next) {
-    if (err.status && err.visible) {
+    if (res.headersSent) {
+        next(err);
+    } else if (err.status && err.visible) {
         res.status(err.status);
         res.send({
             error: {

@@ -1,3 +1,4 @@
 --require lib/spec-helper.js
 lib/spec-utils.js
+lib/models/index.spec.js
 lib/**/*.spec.js

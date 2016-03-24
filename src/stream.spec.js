@@ -10,10 +10,12 @@ describe('Redis stream', function() {
 
         expect(subs).not.to.have.been.called; // eslint-disable-line
 
-        await Publisher.publish('test_stream', { data: 'It works!' });
+        let message = JSON.stringify({ data: 'It works!' });
+
+        await Publisher.publish('test_stream', message);
 
         await deferred;
         expect(subs).to.have.been.calledOnce; // eslint-disable-line
-        expect(subs.firstCall.args[0]).to.have.property('data', 'It works!');
+        expect(subs.firstCall.args[0]).to.equal(message);
     });
 });

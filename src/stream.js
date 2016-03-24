@@ -30,9 +30,8 @@ export const Subscriber = {
 
     onMessage(channel, message) {
         if (this.subscriptions[channel]) {
-            let data = JSON.parse(message);
             this.subscriptions[channel].forEach(fn => {
-                fn(data);
+                fn(message);
             });
         }
     },
@@ -56,14 +55,19 @@ export const Subscriber = {
         if (!this.subscriptions[channel])
             return false;
 
-        let index = this.subscriptions.indexOf(fn);
+        let index = this.subscriptions[channel].indexOf(fn);
         if (index === -1)
             return false;
 
         this.subscriptions[channel].splice(index, 1);
 
         if (!this.subscriptions[channel].length) {
-            this.redis.unsubscribe(channel); // async
+            fromCallback(this.redis, 'unsubscribe')(channel)
+                .then(() => {
+                    if (!this.subscriptions[channel].length)
+                        delete this.subscriptions[channel];
+                    // TODO: fix race condition
+                }); // async
         }
 
         return true;
@@ -80,8 +84,8 @@ export const Publisher = {
         return this._redis;
     },
 
-    /*promise*/ publish(channel, data) {
-        return fromCallback(this.redis, 'publish')(channel, JSON.stringify(data));
+    /*promise*/ publish(channel, message) {
+        return fromCallback(this.redis, 'publish')(channel, message);
     },
 };
 
