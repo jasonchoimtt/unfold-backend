@@ -5,7 +5,10 @@ import pathToRegexp from 'path-to-regexp';
 import { BadRequestError } from './errors';
 
 
-export function fromCallback(fn) {
+export function fromCallback(fn, method) {
+    if (method)
+        fn = fn[method].bind(fn);
+
     return function(...args) {
         return new Promise((resolve, reject) => {
             return fn(...args, function(err, datum) {

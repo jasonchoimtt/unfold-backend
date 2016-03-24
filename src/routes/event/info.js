@@ -114,7 +114,7 @@ router.patch('/:id/roles', requireLogin, parseJSON, catchError(async function(re
             throw err;
     }
 
-    let roles = await Event.build({ id: req.params.id }, { hasNewRecord: false }).getRoles({
+    let roles = await Event.build({ id: req.params.id }, { isNewRecord: false }).getRoles({
         include: [User],
     });
     res.json(roles);

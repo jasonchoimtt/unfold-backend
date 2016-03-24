@@ -1,6 +1,5 @@
-import { request, createTestUser } from '../../spec-utils';
+import { request, createTestUser, withCreateEvent } from '../../spec-utils';
 import { Role } from '../../models';
-import { withCreateEvent } from './spec-utils';
 
 
 describe('Event info endpoint', function() {

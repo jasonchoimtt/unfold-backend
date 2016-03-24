@@ -1,6 +1,5 @@
 import _ from 'lodash';
-import { request } from '../../spec-utils';
-import { withCreateEvent, withCreatePosts } from './spec-utils';
+import { request, withCreateEvent, withCreatePosts } from '../../spec-utils';
 import { queue } from '../../scraper/queue';
 
 describe('Timeline endpoint', function() {

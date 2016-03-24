@@ -1,5 +1,4 @@
-import { request } from '../../spec-utils';
-import { withCreateEvent, withCreatePosts } from './spec-utils';
+import { request, withCreateEvent, withCreatePosts } from '../../spec-utils';
 
 
 describe('Timegram endpoint', function() {
