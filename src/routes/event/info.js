@@ -1,14 +1,40 @@
 import express from 'express';
 import _ from 'lodash';
+import Joi from 'joi';
 import { ValidationError } from 'sequelize';
 
-import { parseJSON, catchError } from '../../utils';
+import { parseJSON, catchError, joiLanguageCode, validateOrThrow } from '../../utils';
 import { BadRequestError, NotFoundError, UnauthorizedError } from '../../errors';
 import { requireLogin } from '../../auth';
 import { Event, Role, User } from '../../models';
 
 
 export const router = express.Router();
+
+const requiredFields = ['title', 'location'];
+const updatableFields = {
+    title: Joi.string().min(3).max(255).trim(),
+    location: Joi.string().min(2).max(255).trim(),
+
+    tags: Joi.array().items(Joi.string().trim()).unique(),
+
+    description: Joi.string().max(255).trim(),
+    information: Joi.string().max(10000).trim(),
+
+    startedAt: Joi.date().iso(),
+    endedAt: Joi.alternatives(Joi.date().iso(), Joi.any().valid(null)),
+    timezone: Joi.number().min(-12).max(12),
+    language: joiLanguageCode(),
+};
+
+const creationSchema = Joi.object(
+    _.mapValues(updatableFields, (v, k) => requiredFields.indexOf(k) !== -1 ? v.required() : v));
+const updateSchema = Joi.object(updatableFields);
+
+const roleUpdateSchema = Joi.array().items(Joi.object({
+    type: Joi.any().valid(...Role.types, null).required(),
+    userId: Joi.string().required(),
+}));
 
 /*
  * Event info endpoint
@@ -19,24 +45,15 @@ router.get('/', catchError(async function(req, res) {
 }));
 
 router.post('/', requireLogin, parseJSON, catchError(async function(req, res) {
-    let data = _.pick(req.body, 'title', 'location', 'tags', 'description', 'information',
-                      'startedAt', 'endedAt', 'timezone', 'language');
+    let data = validateOrThrow(req.body, creationSchema);
     data.roles = [{
         userId: req.session.user.id,
         type: Role.OWNER,
     }];
 
-    let event;
-    try {
-        event = await Event.create(data, {
-            include: [{ model: Role, as: 'roles' }],
-        });
-    } catch (err) {
-        if (err instanceof ValidationError)
-            throw new BadRequestError();
-        else
-            throw err;
-    }
+    let event = await Event.create(data, {
+        include: [{ model: Role, as: 'roles' }],
+    });
     res.status(201).json(event);
 }));
 
@@ -54,20 +71,11 @@ router.put('/:id', requireLogin, parseJSON, catchError(async function(req, res) 
     if (!role)
         throw new UnauthorizedError();
 
-    let data = _.pick(req.body, 'title', 'location', 'tags', 'description', 'information',
-                      'startedAt', 'endedAt', 'timezone', 'language');
+    let data = validateOrThrow(req.body, updateSchema);
 
-    let event;
-    try {
-        event = await Event.update(data, {
-            where: { id: req.params.id },
-        });
-    } catch (err) {
-        if (err instanceof ValidationError)
-            throw new BadRequestError();
-        else
-            throw err;
-    }
+    let event = await Event.update(data, {
+        where: { id: req.params.id },
+    });
     res.json(event);
 }));
 
@@ -87,10 +95,10 @@ router.patch('/:id/roles', requireLogin, parseJSON, catchError(async function(re
             .hasUserWithRole(req.session.user.id, Role.OWNER))
         throw new UnauthorizedError();
 
-    if (!Array.isArray(req.body))
-        throw new BadRequestError();
+    let data = validateOrThrow(req.body, roleUpdateSchema);
+
     try {
-        await Promise.all(req.body.map(role => {
+        await Promise.all(data.map(role => {
             if (role.type === null) {
                 return Role.destroy({
                     where: {
@@ -109,7 +117,7 @@ router.patch('/:id/roles', requireLogin, parseJSON, catchError(async function(re
         }));
     } catch (err) {
         if (err instanceof ValidationError)
-            throw new BadRequestError();
+            throw new BadRequestError(); // TODO: reject invalid id
         else
             throw err;
     }

@@ -65,8 +65,7 @@ describe('Timeline endpoint', function() {
     it('creates a new link post and requests scraping', async function() {
         const expectData = data => {
             expect(data).to.have.property('caption', 'A link');
-            expect(data).to.have.property('data')
-                .that.has.property('url', 'http://www.example.com/');
+            expect(data).to.have.deep.property('data.url', 'http://www.example.com/');
             expect(data).to.have.deep.property('author.id', user.id);
         };
         let resp = await requestAuth.post(`/api/event/${event.id}/timeline`, {
@@ -84,24 +83,28 @@ describe('Timeline endpoint', function() {
     });
 
     it('requires authentication to create posts', async function() {
-        try {
-            await request.post(`/api/event/${event.id}/timeline`, {
+        await expect(
+            request.post(`/api/event/${event.id}/timeline`, {
                 caption: 'I like self posts!',
-            });
-        } catch (err) {
-            expect(err.status).to.equal(401);
-            return;
-        }
-        throw new Error('error not thrown');
+            }))
+            .to.be.rejected.and.eventually.have.property('status', 401);
+    });
+
+    it('rejects creating an invalid post', async function() {
+        await expect(
+            requestAuth.post(`/api/event/${event.id}/timeline`, {
+                caption: 11,
+            }))
+            .to.be.rejected.and.eventually
+                .have.deep.property('data.error.message').which.includes('caption');
     });
 
     it('rejects creating an empty post', async function() {
-        try {
-            await requestAuth.post(`/api/event/${event.id}/timeline`, {});
-        } catch (err) {
-            expect(err.status).to.equal(400);
-            return;
-        }
-        throw new Error('error not thrown');
+        await expect(
+            requestAuth.post(`/api/event/${event.id}/timeline`, {}))
+            .to.be.rejected.and.eventually
+                .include({ status: 400 }).and
+                .have.deep.property('data.error.message')
+                    .which.includes('caption').and.includes('data.url');
     });
 });

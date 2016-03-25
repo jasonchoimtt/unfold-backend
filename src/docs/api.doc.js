@@ -112,6 +112,36 @@ await request('Update user profile', `
     }
 `);
 
+// Errors
+// ------
+//
+// Our API uses HTTP error codes and a JSON body to show errors. For example,
+// 401 Unauthorized is used for authentication problems.
+/* !request Authentication error */
+
+await request('Authentication error', `
+    PUT ${endpoint}/user/${username}
+    { # No Authorization header
+        "name": "Nyan The Cat",
+        "profile": {
+            "description": "Please subscribe to Cat Facts!"
+        }
+    }
+`, { expectError: true });
+
+// 400 Bad Request is used for invalid data.
+/* !request Invalid format */
+
+await request('Invalid format', `
+    POST ${endpoint}/event
+    Authorization: ${token}
+    {
+        "title": 123,
+        "location": "Outer space",
+        "unknown": "fields"
+    }
+`, { expectError: true });
+
 // /event - Event collection
 // -------------------------
 //
@@ -242,7 +272,7 @@ await request('Get roles associated with event', `
 // Specify the time span using `begin` and `end`. If `end` or both are not
 // specified, up to 100 posts will be fetched in reverse chronological order.
 //
-// Date formats are in ISO8601. UNIX timestamps may also work.
+// Date formats are in ISO8601.
 /* !request Get timeline posts: default */
 
 await request('Get timeline posts: default', `
@@ -316,7 +346,7 @@ if (require.main === module) {
                     console.log(out);
                 });
         })
-        .catch(err => { console.error(err.stack || err); });
+        .catch(err => { console.error(err.stack || err); process.exit(1); });
 }
 
 // <style>

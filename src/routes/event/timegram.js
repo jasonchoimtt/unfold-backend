@@ -1,76 +1,58 @@
 import express from 'express';
 import _ from 'lodash';
+import assert from 'assert';
+import Joi from 'joi';
 import { fn, col, literal } from 'sequelize';
 
-import { catchError } from '../../utils';
-import { BadRequestError, NotFoundError } from '../../errors';
+import { catchError, validateOrThrow } from '../../utils';
+import { NotFoundError } from '../../errors';
 import { Event } from '../../models';
 
-
-/**
- * Parses an input date into UNIX timestamp, or the default value if it is null.
- *
- * Throws if the date format is invalid.
- *
- * @param {String} date a String date in UNIX timestamp or ISO 8601
- * @param {Number} [defaultValue] the default value to use if date is null
- * @param {Object} [options]
- * @param {Boolean} [options.force] use default value even if date is invalid
- */
-function parseDate(date, defaultValue = null, options = {}) {
-    if (typeof date === 'undefined' || date === null)
-        return defaultValue;
-
-    if (/^\d+$/.exec(date.trim()))
-        date = parseInt(date, 10) * 1000;
-    let ret = new Date(date).getTime();
-    if (isNaN(ret)) {
-        if (options.force)
-            return defaultValue;
-        else
-            throw new BadRequestError();
-    }
-    return Math.floor(ret / 1000);
-}
 
 function dateOf(timestamp) {
     return new Date(timestamp * 1000);
 }
 
+function unixOf(date) {
+    return Math.floor(date.getTime() / 1000);
+}
+
 
 export const router = express.Router();
 
-router.get('/:id/timegram', catchError(async function(req, res) {
-    const MIN_RESOLUTION = 3600;
-    const DEFAULT_RESOLUTION = 86400;
+const querySchema = Joi.object({
+    begin: Joi.date().iso(),
+    end: Joi.date().iso(),
+    resolution: Joi.number().integer().min(3600).default(86400),
+});
 
+router.get('/:id/timegram', catchError(async function(req, res) {
     let event = await Event.findById(req.params.id);
     if (!event)
         throw new NotFoundError();
 
-    let begin = parseDate(req.query.begin, event.startedAt.getTime() / 1000);
-    let end = parseDate(req.query.end,
-                        (event.endedAt ? event.endedAt.getTime() : Date.now()) / 1000);
+    let { begin, end, resolution } = validateOrThrow(req.query, querySchema);
 
-    let resolution = parseInt(req.query.resolution, 10);
-    if (isNaN(resolution))
-        resolution = DEFAULT_RESOLUTION;
-    if (resolution < MIN_RESOLUTION)
-        // TODO: make an error message
-        resolution = DEFAULT_RESOLUTION;
+    begin = _.max([begin, event.startedAt].filter(x => x));
+    end = _.min([end, event.endedAt].filter(x => x)) || new Date();
 
-    let endBound = Math.ceil((end - begin) / resolution) * resolution + begin;
+    // Extend the end time so that the number of buckets is integral
+    let unixBegin = unixOf(begin);
+    let unixEnd = unixOf(end);
+    let unixEndBound = Math.ceil((unixOf(end) - unixBegin) / resolution) * resolution + unixBegin;
 
-    let count = (endBound - begin) / resolution;
+    let count = (unixEndBound - unixBegin) / resolution;
+
+    assert(count < 24 * 365 * 3); // At most three years at finest resolution to prevent DOS
 
     let frequencies = await event.getPosts({
         attributes: [
             [fn('WIDTH_BUCKET', literal('EXTRACT(EPOCH FROM "createdAt")'),
-                begin, endBound, count), 'bucket'],
+                unixBegin, unixEndBound, count), 'bucket'],
             [fn('COUNT', col('*')), 'frequency'],
         ],
         where: {
-            createdAt: { $gte: dateOf(begin), $lt: dateOf(end) },
+            createdAt: { $gte: begin, $lt: end },
         },
         group: [col('bucket')],
         order: [
@@ -81,8 +63,8 @@ router.get('/:id/timegram', catchError(async function(req, res) {
     frequencies = frequencies.map(x => x.toJSON());
 
     let histogram = _.range(count).map(bucket => ({
-        begin: dateOf(begin + resolution * bucket),
-        end: dateOf(Math.min(begin + resolution * (bucket + 1), end)),
+        begin: dateOf(unixBegin + resolution * bucket),
+        end: dateOf(Math.min(unixBegin + resolution * (bucket + 1), unixEnd)),
         frequency: 0,
     }));
     frequencies.forEach(record => { // bucket from Postgres is 1-based
@@ -92,10 +74,6 @@ router.get('/:id/timegram', catchError(async function(req, res) {
 
     return res.json({
         timegram: histogram,
-        span: {
-            begin: dateOf(begin),
-            end: dateOf(end),
-            resolution,
-        },
+        span: { begin, end, resolution },
     });
 }));

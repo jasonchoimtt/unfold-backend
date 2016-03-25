@@ -13,7 +13,7 @@ export const User = sequelize.define('user', {
         allowNull: false,
         unique: true,
         primaryKey: true,
-        validate: { is: /^[A-Za-z][A-Za-z0-9_]*$/ },
+        validate: { is: /^[A-Za-z][A-Za-z0-9_]{4,31}$/ },
     },
     password: {
         type: Sequelize.TEXT,

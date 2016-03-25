@@ -26,7 +26,7 @@ describe('User endpoint', function() {
         it('registers a new user', async function() {
             let resp = await request.post('/api/user', {
                 id: 'lorem_user',
-                password: '123456',
+                password: '12345678',
                 name: 'Lorem User',
                 email: 'lorem.user@example.com',
                 dateOfBirth: new Date(2000, 0, 1),
@@ -38,11 +38,39 @@ describe('User endpoint', function() {
 
             resp = await request.post('/api/auth', {
                 username: 'lorem_user',
-                password: '123456',
+                password: '12345678',
             });
 
             expect(resp.data).to.have.property('token');
             expect(resp.data).to.have.property('exp');
+        });
+
+        it('rejects registered names', async function() {
+            expect(
+                request.post('/api/user', {
+                    id: 'test_user',
+                    password: '12345678',
+                    name: 'Lorem User',
+                    email: 'lorem.user_example.com',
+                    dateOfBirth: new Date(2000, 0, 1),
+                }))
+                .to.be.rejected.and.eventually
+                    .include({ status: 400 })
+                    .and.have.property('data.error.message').which.matches(/test_user/);
+        });
+
+        it('rejects invalid field', async function() {
+            expect(
+                request.post('/api/user', {
+                    id: 'lorem_user',
+                    password: '12345678',
+                    name: 'Lorem User',
+                    email: 'lorem.user_example.com',
+                    dateOfBirth: new Date(2000, 0, 1),
+                }))
+                .to.be.rejected.and.eventually
+                    .include({ status: 400 })
+                    .and.have.property('data.error.message').which.matches(/email/);
         });
 
         it('rejects incomplete registration', async function() {
@@ -50,7 +78,7 @@ describe('User endpoint', function() {
                 await request.post('/api/user', {
                     data: {
                         id: 'lorem_user',
-                        password: '123456',
+                        password: '12345678',
                         name: 'Lorem User',
                         dateOfBirth: new Date(2000, 0, 1),
                     },

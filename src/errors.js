@@ -1,3 +1,6 @@
+import _ from 'lodash';
+
+
 export const defaultErrorMessage = 'Internal server error';
 
 export function errorFactory(name, status = 500, message = defaultErrorMessage) {
@@ -7,7 +10,12 @@ export function errorFactory(name, status = 500, message = defaultErrorMessage) 
             this.name = name;
             this.status = status;
             this.message = msg;
+            this.extras = null;
             this.visible = true;
+        }
+
+        toJSON() {
+            return _.extend(_.pick(this, 'name', 'status', 'message'), this.extras);
         }
     };
     // ret.name = name;
@@ -29,13 +37,7 @@ export function errorHandler(err, req, res, next) {
         next(err);
     } else if (err.status && err.visible) {
         res.status(err.status);
-        res.send({
-            error: {
-                name: err.name,
-                status: err.status,
-                message: err.message,
-            },
-        });
+        res.send({ error: err });
     } else {
         next(err);
     }

@@ -60,6 +60,30 @@ describe('Event info endpoint', function() {
         expect(evt.language).to.equal('zh-hk');
     });
 
+    it('rejects invalid data', async function() {
+        await expect(requestAuth.put(`/api/event/${event.id}`, {
+            tags: '123',
+        }))
+            .to.be.rejected.and.eventually
+                .have.include({ status: 400 }).and
+                .have.deep.property('data.error.message').which.matches(/tags/);
+
+        await expect(requestAuth.put(`/api/event/${event.id}`, {
+            sth: 'ridiculous',
+        }))
+            .to.be.rejected.and.eventually
+                .have.include({ status: 400 }).and
+                .have.deep.property('data.error.message').which.matches(/sth/);
+
+        await expect(requestAuth.put(`/api/event/${event.id}`, {
+            language: 'zh-99',
+            sth: 'ridiculous',
+        }))
+            .to.be.rejected.and.eventually
+                .have.include({ status: 400 }).and
+                .have.deep.property('data.error.message').which.matches(/language/);
+    });
+
     it('requires authentication to create and change events', async function() {
         await (async () => {
             try {

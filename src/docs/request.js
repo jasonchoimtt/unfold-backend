@@ -84,6 +84,8 @@ export default function(logger) {
             log(`HTTP ${err.status} ${err.statusText}`);
             log(JSON.stringify(err.data, null, 4));
             send();
+            if (!options.expectError)
+                throw err;
             return err.data;
         }
     };

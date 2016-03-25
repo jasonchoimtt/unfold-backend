@@ -1,14 +1,34 @@
 import express from 'express';
+import Joi from 'joi';
 import { ValidationError } from 'sequelize';
 import _ from 'lodash';
 
-import { parseJSON, catchError } from '../utils';
+import { parseJSON, catchError, validateOrThrow } from '../utils';
 import { BadRequestError, NotFoundError, UnauthorizedError } from '../errors';
 import { requireLogin } from '../auth';
 import { User } from '../models';
 
 
 export const router = express.Router();
+
+const requiredFields = ['name'];
+const updatableFields = {
+    name: Joi.string().min(1).max(255),
+    profile: {
+        description: Joi.string(),
+    },
+};
+
+const creationSchema = Joi.object(_.extend(
+    {
+        id: Joi.string().regex(/^[A-Za-z][A-Za-z0-9_]{4,31}$/).required(),
+        password: Joi.string().min(8).required(),
+        email: Joi.string().email().required(),
+        dateOfBirth: Joi.date().iso().required(), // TODO: timezone issues
+    },
+    _.mapValues(updatableFields, (v, k) => requiredFields.indexOf(k) !== -1 ? v.required() : v)
+));
+const updateSchema = Joi.object(updatableFields);
 
 /**
  * Registration endpoint
@@ -17,26 +37,16 @@ router.post('/', parseJSON, catchError(async function(req, res) {
     if (req.session)
         throw new BadRequestError();
 
-    // We only need to ensure that they are not null;
-    // other validations are done by Sequelize
-    // TODO: make this less spaghettish
-    let fields = ['id', 'password', 'name', 'email', 'dateOfBirth'];
-    let profileFields = ['description'];
-    if (fields.some(x => !req.body[x]))
-        throw new BadRequestError();
-
-    fields.push('profile');
+    let data = validateOrThrow(req.body, creationSchema);
 
     let user;
     try {
-        user = User.build(_.pick(req.body, fields));
-        user.profile = _.pick(user.profile, profileFields);
+        user = User.build(data);
         await user.setPassword(req.body.password);
         await user.save();
     } catch (err) {
-        // TODO: handle username clash gracefully
         if (err instanceof ValidationError)
-            throw new BadRequestError();
+            throw new BadRequestError(`the "id" ${user.id} is already taken`);
         else
             throw err;
     }
@@ -65,18 +75,10 @@ router.put('/:id', requireLogin, parseJSON, catchError(async function(req, res) 
     if (req.session.user.id !== user.id)
         throw new UnauthorizedError();
 
-    let data = _.pick(req.body, 'name', 'profile');
-    if (data.profile) // TODO: merge with body other profile fields
-        data.profile = _.pick(data.profile, 'description');
+    let data = validateOrThrow(req.body, updateSchema);
+    _.defaults(data.profile, user.profile);
 
-    try {
-        user = await user.update(data);
-    } catch (err) {
-        if (err instanceof ValidationError)
-            throw new BadRequestError();
-        else
-            throw err;
-    }
+    user = await user.update(data);
 
     let privateAccess = req.session && req.session.user.id === user.id;
 

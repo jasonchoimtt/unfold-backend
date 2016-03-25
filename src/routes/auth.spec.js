@@ -7,7 +7,7 @@ describe('Authentication endpoint', function() {
         let user = User.build({
             id: 'auth_test',
         });
-        await user.setPassword('test_pw');
+        await user.setPassword('test_pwd');
         await user.save();
     });
 
@@ -18,7 +18,7 @@ describe('Authentication endpoint', function() {
     it('authenticates by username and password', async function() {
         let resp = await request.post('api/auth/', {
             username: 'auth_test',
-            password: 'test_pw',
+            password: 'test_pwd',
         });
         expect(resp.data.token).not.to.be.null; // eslint-disable-line
         expect(resp.data.exp).not.to.be.null; // eslint-disable-line
@@ -53,7 +53,7 @@ describe('Authentication endpoint', function() {
     it('renews a token', async function() {
         let resp = await request.post('api/auth/', {
             username: 'auth_test',
-            password: 'test_pw',
+            password: 'test_pwd',
         });
         let token = resp.data.token;
         await new Promise(resolve => setTimeout(resolve, 1000));
