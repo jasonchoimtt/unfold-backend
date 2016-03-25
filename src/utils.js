@@ -106,12 +106,6 @@ export function joiLanguageCode() {
             if (!cleaned) // Using any.unknown to avoid patching Joi directly
                 return this.createError('any.unknown', { value }, state, options);
 
-            this._inner.replacements = this._inner.replacements || [];
-            this._inner.replacements.push({
-                pattern: value,
-                replacement: cleaned,
-            });
-
             return null;
         });
     }.call(Joi.string());

@@ -13,9 +13,7 @@ describe('Utility functions', function() {
 
     it('joiLanguageCode', function() {
         expect(joiLanguageCode().validate('zh-hk').error).to.be.null; // eslint-disable-line
-        expect(joiLanguageCode().validate('zh-hk').value).to.equal('zh-HK');
-        expect(joiLanguageCode().validate(' zh-hk').error).to.be.null; // eslint-disable-line
-        expect(joiLanguageCode().validate(' zh-hk').value).to.equal('zh-HK');
+        expect(joiLanguageCode().validate('zh-hk').value).to.equal('zh-hk');
         expect(joiLanguageCode().validate('hk').error).to.be.not.null; // eslint-disable-line
         expect(joiLanguageCode().validate(1).error).to.be.not.null; // eslint-disable-line
 

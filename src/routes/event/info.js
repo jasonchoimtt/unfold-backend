@@ -24,7 +24,7 @@ const updatableFields = {
     startedAt: Joi.date().iso(),
     endedAt: Joi.alternatives(Joi.date().iso(), Joi.any().valid(null)),
     timezone: Joi.number().min(-12).max(12),
-    language: joiLanguageCode(),
+    language: joiLanguageCode().trim().lowercase(),
 };
 
 const creationSchema = Joi.object(
