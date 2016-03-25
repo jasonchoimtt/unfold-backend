@@ -20,12 +20,7 @@ export const User = sequelize.define('user', {
         allowNull: true,
         validate: { notEmpty: true },
     },
-    firstName: {
-        type: Sequelize.STRING(255),
-        allowNull: true,
-        validate: { notEmpty: true },
-    },
-    lastName: {
+    name: {
         type: Sequelize.STRING(255),
         allowNull: true,
         validate: { notEmpty: true },
@@ -44,6 +39,11 @@ export const User = sequelize.define('user', {
         type: Sequelize.DATE,
         allowNull: true,
     },
+    profile: {
+        type: Sequelize.JSONB,
+        allowNull: false,
+        defaultValue: {},
+    },
 }, {
     getterMethods: {
         active() {
@@ -56,7 +56,7 @@ export const User = sequelize.define('user', {
     },
     instanceMethods: {
         get: plainGetterFactory((obj, options) => {
-            let attributes = ['id', 'firstName', 'lastName', 'createdAt'];
+            let attributes = ['id', 'name', 'createdAt', 'profile'];
             if (options.attributeSet === 'private')
                 attributes = attributes.concat(['email', 'dateOfBirth']);
             return _.pick(obj, attributes);

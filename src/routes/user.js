@@ -19,13 +19,18 @@ router.post('/', parseJSON, catchError(async function(req, res) {
 
     // We only need to ensure that they are not null;
     // other validations are done by Sequelize
-    let fields = ['id', 'password', 'firstName', 'lastName', 'email', 'dateOfBirth'];
+    // TODO: make this less spaghettish
+    let fields = ['id', 'password', 'name', 'email', 'dateOfBirth'];
+    let profileFields = ['description'];
     if (fields.some(x => !req.body[x]))
         throw new BadRequestError();
+
+    fields.push('profile');
 
     let user;
     try {
         user = User.build(_.pick(req.body, fields));
+        user.profile = _.pick(user.profile, profileFields);
         await user.setPassword(req.body.password);
         await user.save();
     } catch (err) {
@@ -60,8 +65,9 @@ router.put('/:id', requireLogin, parseJSON, catchError(async function(req, res) 
     if (req.session.user.id !== user.id)
         throw new UnauthorizedError();
 
-    // Well, proof of concept
-    let data = _.pick(req.body, 'firstName', 'lastName');
+    let data = _.pick(req.body, 'name', 'profile');
+    if (data.profile) // TODO: merge with body other profile fields
+        data.profile = _.pick(data.profile, 'description');
 
     try {
         user = await user.update(data);

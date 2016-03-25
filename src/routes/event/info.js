@@ -19,7 +19,7 @@ router.get('/', catchError(async function(req, res) {
 }));
 
 router.post('/', requireLogin, parseJSON, catchError(async function(req, res) {
-    let data = _.pick(req.body, 'title', 'location', 'tags', 'description',
+    let data = _.pick(req.body, 'title', 'location', 'tags', 'description', 'information',
                       'startedAt', 'endedAt', 'timezone', 'language');
     data.roles = [{
         userId: req.session.user.id,
@@ -54,7 +54,7 @@ router.put('/:id', requireLogin, parseJSON, catchError(async function(req, res) 
     if (!role)
         throw new UnauthorizedError();
 
-    let data = _.pick(req.body, 'title', 'location', 'tags', 'description',
+    let data = _.pick(req.body, 'title', 'location', 'tags', 'description', 'information',
                       'startedAt', 'endedAt', 'timezone', 'language');
 
     let event;

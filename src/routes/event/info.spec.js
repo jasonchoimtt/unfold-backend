@@ -26,11 +26,14 @@ describe('Event info endpoint', function() {
         let resp = await requestAuth.post(`/api/event/`, {
             title: 'A New Event',
             location: 'Mars',
+            information: 'Looking for contributors',
         });
         expect(resp.status).to.equal(201);
 
         resp = await request.get(`/api/event/${resp.data.id}`);
         expect(resp.data.title).to.equal('A New Event');
+        expect(resp.data.location).to.equal('Mars');
+        expect(resp.data.information).to.equal('Looking for contributors');
         expect(resp.data.roles).to.have.length(1);
         expect(resp.data.roles[0]).to.have.deep.property('user.id', user.id);
     });
@@ -39,6 +42,7 @@ describe('Event info endpoint', function() {
         await requestAuth.put(`/api/event/${event.id}`, {
             tags: ['Hong Kong', 'Social'],
             description: 'Lorem ipsum',
+            information: 'International stuff'.repeat(100),
             startedAt: new Date(2014, 9, 26),
             endedAt: new Date(2015, 9, 26),
             timezone: 8,
@@ -49,6 +53,7 @@ describe('Event info endpoint', function() {
         let evt = resp.data;
         expect(evt.tags).to.deep.equal(['Hong Kong', 'Social']);
         expect(evt.description).to.equal('Lorem ipsum');
+        expect(evt.information).to.equal('International stuff'.repeat(100));
         expect(new Date(evt.startedAt).getTime()).to.equal(new Date(2014, 9, 26).getTime());
         expect(new Date(evt.endedAt).getTime()).to.equal(new Date(2015, 9, 26).getTime());
         expect(evt.timezone).to.equal(8);

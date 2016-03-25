@@ -19,6 +19,11 @@ export const Post = sequelize.define('post', _.assign({}, PostData.attributes, {
         allowNull: false,
         defaultValue: '',
     },
+    tags: {
+        type: Sequelize.ARRAY(Sequelize.STRING(255)),
+        allowNull: false,
+        defaultValue: [],
+    },
 }), {
     instanceMethods: {
         get: plainGetterFactory(x =>

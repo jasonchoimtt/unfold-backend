@@ -43,11 +43,15 @@ describe('Timeline endpoint', function() {
         const expectData = data => {
             expect(data).to.have.property('caption', 'I like self posts!');
             expect(data).to.have.property('data').that.is.null; // eslint-disable-line
+            expect(data).to.have.property('tags')
+                .to.include.something.equal('HK').and
+                .to.include.something.equal('BC');
             expect(data).to.have.deep.property('author.id', user.id);
         };
 
         let resp = await requestAuth.post(`/api/event/${event.id}/timeline`, {
             caption: 'I like self posts!',
+            tags: ['HK', 'BC'],
         });
         expect(resp.status).to.equal(201);
         expectData(resp.data);

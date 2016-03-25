@@ -31,6 +31,11 @@ export const Event = sequelize.define('event', {
         allowNull: false,
         defaultValue: '',
     },
+    information: {
+        type: Sequelize.TEXT,
+        allowNull: false,
+        defaultValue: '',
+    },
     startedAt: {
         type: Sequelize.DATE,
         allowNull: false,

@@ -8,8 +8,7 @@ describe('User endpoint', function() {
     beforeEach(async function() {
         ({ user, requestAuth } = await createTestUser());
         await user.update({
-            firstName: 'Test',
-            lastName: 'User',
+            name: 'Test User',
             email: 'test.user@example.com',
             dateOfBirth: new Date(1999, 11, 31),
         });
@@ -28,8 +27,7 @@ describe('User endpoint', function() {
             let resp = await request.post('/api/user', {
                 id: 'lorem_user',
                 password: '123456',
-                firstName: 'Lorem',
-                lastName: 'User',
+                name: 'Lorem User',
                 email: 'lorem.user@example.com',
                 dateOfBirth: new Date(2000, 0, 1),
             });
@@ -53,8 +51,7 @@ describe('User endpoint', function() {
                     data: {
                         id: 'lorem_user',
                         password: '123456',
-                        firstName: 'Lorem',
-                        lastName: 'User',
+                        name: 'Lorem User',
                         dateOfBirth: new Date(2000, 0, 1),
                     },
                 });
@@ -72,10 +69,10 @@ describe('User endpoint', function() {
 
         expect(resp.data).to.have.property('id', 'test_user');
         expect(resp.data).not.to.have.property('password');
-        expect(resp.data).to.have.property('firstName', 'Test');
-        expect(resp.data).to.have.property('lastName', 'User');
+        expect(resp.data).to.have.property('name', 'Test User');
         expect(resp.data).not.to.have.property('email');
         expect(resp.data).not.to.have.property('dateOfBirth');
+        expect(resp.data).to.have.property('profile'); // = {}
     });
 
     it('displays a complete private user profile', async function() {
@@ -83,8 +80,7 @@ describe('User endpoint', function() {
 
         expect(resp.data).to.have.property('id', 'test_user');
         expect(resp.data).not.to.have.property('password');
-        expect(resp.data).to.have.property('firstName', 'Test');
-        expect(resp.data).to.have.property('lastName', 'User');
+        expect(resp.data).to.have.property('name', 'Test User');
         expect(resp.data).to.have.property('email', 'test.user@example.com');
         expect(resp.data).to.have.property('dateOfBirth')
                 .that.satisfies(x => new Date(x).getTime() === new Date(1999, 11, 31).getTime());
@@ -94,15 +90,16 @@ describe('User endpoint', function() {
         let { requestAuth } = await createTestUser('test_user2');
 
         let resp = await requestAuth.put('/api/user/test_user2', {
-            firstName: 'Hate',
-            lastName: 'You',
+            name: 'Hate You',
+            profile: {
+                description: 'I am a boy',
+            },
         });
-        expect(resp.data).to.have.property('firstName', 'Hate');
-        expect(resp.data).to.have.property('lastName', 'You');
+        expect(resp.data).to.have.property('name', 'Hate You');
         expect(resp.data).to.have.property('email');
+        expect(resp.data).to.have.deep.property('profile.description', 'I am a boy');
 
         resp = await request.get('/api/user/test_user2');
-        expect(resp.data).to.have.property('firstName', 'Hate');
-        expect(resp.data).to.have.property('lastName', 'You');
+        expect(resp.data).to.have.property('name', 'Hate You');
     });
 });

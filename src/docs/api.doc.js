@@ -55,8 +55,7 @@ await request('Create user', `
     {
         "id": "${username}",
         "password": "eightstars",
-        "firstName": "Nyan",
-        "lastName": "Cat",
+        "name": "Nyan Cat",
         "email": "nyancat@unfold.online",
         "dateOfBirth": "1999-09-08" # or any ISO8601 format
     }
@@ -99,15 +98,17 @@ await request('Access user profile: public ', `
 
 // ### PUT /user/:id - Update user profile
 
-// Currently only `firstName` and `lastName` are updatable.
+// Currently only `name` and `profile.description` is updatable.
 /* !request Update user profile */
 
 await request('Update user profile', `
     PUT ${endpoint}/user/${username}
     Authorization: ${token}
     {
-        "firstName": "Cat",
-        "lastName": "The Nyan"
+        "name": "Nyan The Cat",
+        "profile": {
+            "description": "Please subscribe to Cat Facts!"
+        }
     }
 `);
 
@@ -154,8 +155,9 @@ await request('Get event information', `
 
 // **Owner.** Update the information of the event.
 //
-// Supported fields: `tags`, `description`, `startedAt`, `endedAt`, `timezone`,
-// `language`
+// Supported fields: `tags`, `description`, `information`,
+// `startedAt`, `endedAt`, `timezone`, `language`
+// Notably, description is limited to 255 characters.
 /* !request Update event information */
 
 await request('Update event information', `
@@ -206,11 +208,11 @@ await request('Get roles associated with event', `
 // ------|------|-------------
 // author | User | The Unfold user creating the post
 // author.id | String | Username of the user
-// author.firstName | String | First name of the user
-// author.lastName | String | Last name of the user
+// author.name | String | Name of the user
 // author.avatar | URL | URL to the avatar of the user (not implemented yet)
 // createdAt | Date | Time at which the post was created
 // caption | String | Content of the self-post
+// tags | String[] | A list of tags
 //
 // Link post:
 //
@@ -219,12 +221,17 @@ await request('Get roles associated with event', `
 // Field | Type | Description
 // ------|------|-------------
 // data | PostData | Data for the link
-// data.content | String? | Text content
+// data.rel | String? | "TEXT" / "IMAGE" / "PLAYER"
+// data.dimensions | Object? | { ?width: int, ?height: int }
 // data.image | URL? | URL to the image content
+// data.embed | URL? | URL to the iframe link
+// data.content | String? | Text content
 // data.url | URL | URL of the link
+// data.shortUrl | URL | Short URL of the link
 // date.site | String? | Name of the website the link comes from, e.g. Reddit
-// data.source | String? | Part of the website the link comes from, e.g. /r/hong kong
+// data.section | String? | Part of the website the link comes from, e.g. /r/hong kong
 // data.author | String? | Name of the author of the link, e.g. /u/ymcabcd
+// data.author.image | URL? | Link to the author image
 // data.createdAt | Date? | Time at which the link was created
 
 
@@ -254,7 +261,7 @@ await request('Get timeline posts: specify period', `
 
 // **Contributor.** Create a new post in the timeline.
 //
-// Accepted attributes: `caption, data?.url`
+// Accepted attributes: `caption, data?.url, tags`
 /* !request Create new post */
 
 await request('Create new post', `
@@ -262,7 +269,8 @@ await request('Create new post', `
     Authorization: ${token}
     {
         "caption": "A link",
-        "data": { "url": "http://www.example.com/" }
+        "data": { "url": "http://www.example.com/" },
+        "tags": ["HK", "BC"]
     }
 `);
 
@@ -310,3 +318,15 @@ if (require.main === module) {
         })
         .catch(err => { console.error(err.stack || err); });
 }
+
+// <style>
+// @media only screen and (min-width: 1025px) {
+//   #background {
+//     width: 625px;
+//   }
+//   ul.sections > li > div.annotation {
+//     max-width: 625px;
+//     min-width: 625px;
+//   }
+// }
+// </style>

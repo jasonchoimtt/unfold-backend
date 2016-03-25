@@ -45,7 +45,7 @@ router.post('/:id/timeline', requireLogin, parseJSON, catchError(async function(
     if (!role)
         throw new UnauthorizedError();
 
-    let data = _.pick(req.body, 'caption', 'data');
+    let data = _.pick(req.body, 'caption', 'data', 'tags');
     data.data = data.data && _.pick(data.data, 'url');
     data.authorId = req.session.user.id;
 

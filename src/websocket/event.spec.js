@@ -2,7 +2,7 @@ import { WebSocketTestClient } from './spec-utils';
 import { withCreateEvent } from '../spec-utils';
 
 
-describe('WebSocket', function() {
+describe('Event WebSocket', function() {
     let event;
 
     withCreateEvent(vars => { ({ event } = vars); });
