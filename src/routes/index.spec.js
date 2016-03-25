@@ -9,25 +9,23 @@ describe('Server', function() {
     });
 
     it('sets access control header correctly', async function() {
-        const expectHeaders = headers => {
-            expect(headers).to.have.property('access-control-allow-origin',
-                                             Config.accessControl.allowOrigin);
-            expect(headers).to.have.property('access-control-max-age',
-                                             Config.accessControl.maxAge.toString());
-            expect(headers).to.have.property('access-control-allow-headers')
-                .which.matches(/Authorization/).and
-                    .matches(/Content-Type/).and
-                    .matches(/Accept/);
+        let expected = {
+            'access-control-allow-origin': Config.accessControl.allowOrigin,
+            'access-control-max-age': Config.accessControl.maxAge.toString(),
         };
 
         let resp = await request.get('api/');
-        expectHeaders(resp.headers);
+        expect(resp.headers).to.containSubset(expected);
 
         resp = await request.request({
             url: 'api/',
             method: 'options',
         });
-        expectHeaders(resp.headers);
+        expect(resp.headers).to.containSubset(expected);
+        expect(resp.headers).to.have.property('access-control-allow-headers')
+            .which.matches(/Authorization/).and
+                .matches(/Content-Type/).and
+                .matches(/Accept/);
     });
 
     it('sets default cache control header correctly', async function() {

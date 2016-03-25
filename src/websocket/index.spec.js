@@ -13,13 +13,7 @@ describe('WebSocket', function() {
 
     it('404s on no route', async function() {
         let client = new WebSocketTestClient();
-        try {
-            await client.connect('/ridiculous');
-        } catch (err) {
-            expect(err.message).to.include('404');
-            return;
-        }
-
-        throw new Error('error not thrown');
+        await expect(client.connect('/ridiculous'))
+            .to.be.rejected.and.eventually.have.property('message').which.matches(/404/);
     });
 });

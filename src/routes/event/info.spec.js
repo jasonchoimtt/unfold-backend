@@ -31,33 +31,30 @@ describe('Event info endpoint', function() {
         expect(resp.status).to.equal(201);
 
         resp = await request.get(`/api/event/${resp.data.id}`);
-        expect(resp.data.title).to.equal('A New Event');
-        expect(resp.data.location).to.equal('Mars');
-        expect(resp.data.information).to.equal('Looking for contributors');
-        expect(resp.data.roles).to.have.length(1);
-        expect(resp.data.roles[0]).to.have.deep.property('user.id', user.id);
+        expect(resp.data).to.include({
+            title: 'A New Event',
+            location: 'Mars',
+            information: 'Looking for contributors',
+        });
+        expect(resp.data.roles).to.have.length(1).and
+            .all.have.deep.property('user.id', user.id);
     });
 
     it('updates the event information', async function() {
-        await requestAuth.put(`/api/event/${event.id}`, {
+        let data = {
             tags: ['Hong Kong', 'Social'],
             description: 'Lorem ipsum',
             information: 'International stuff'.repeat(100),
-            startedAt: new Date(2014, 9, 26),
-            endedAt: new Date(2015, 9, 26),
+            startedAt: new Date(2014, 9, 26).toJSON(),
+            endedAt: new Date(2015, 9, 26).toJSON(),
             timezone: 8,
             language: 'zh-hk',
-        });
+        };
+        await requestAuth.put(`/api/event/${event.id}`, data);
         let resp = await request.get(`/api/event/${event.id}`);
 
         let evt = resp.data;
-        expect(evt.tags).to.deep.equal(['Hong Kong', 'Social']);
-        expect(evt.description).to.equal('Lorem ipsum');
-        expect(evt.information).to.equal('International stuff'.repeat(100));
-        expect(new Date(evt.startedAt).getTime()).to.equal(new Date(2014, 9, 26).getTime());
-        expect(new Date(evt.endedAt).getTime()).to.equal(new Date(2015, 9, 26).getTime());
-        expect(evt.timezone).to.equal(8);
-        expect(evt.language).to.equal('zh-hk');
+        expect(evt).to.containSubset(data);
     });
 
     it('rejects invalid data', async function() {
@@ -85,29 +82,16 @@ describe('Event info endpoint', function() {
     });
 
     it('requires authentication to create and change events', async function() {
-        await (async () => {
-            try {
-                await request.post(`/api/event/`, {
-                    title: 'A New Event',
-                    location: 'Mars',
-                });
-            } catch (err) {
-                expect(err.status).to.equal(401);
-                return;
-            }
-            throw new Error('error not thrown');
-        })();
-        await (async () => {
-            try {
-                await request.put(`/api/event/${event.id}`, {
-                    tags: ['Hong Kong', 'Social'],
-                });
-            } catch (err) {
-                expect(err.status).to.equal(401);
-                return;
-            }
-            throw new Error('error not thrown');
-        })();
+        await expect(request.post(`/api/event/`, {
+            title: 'A New Event',
+            location: 'Mars',
+        }))
+            .to.be.rejected.and.eventually.have.property('status', 401);
+
+        await expect(request.put(`/api/event/${event.id}`, {
+            tags: ['Hong Kong', 'Social'],
+        }))
+            .to.be.rejected.and.eventually.have.property('status', 401);
     });
 
     describe('roles', function() {
@@ -164,18 +148,13 @@ describe('Event info endpoint', function() {
         });
 
         it('requires authentiction to change roles', async function() {
-            try {
-                await request.patch(`/api/event/${event.id}/roles`, [
-                    {
-                        type: Role.TRANSLATOR,
-                        userId: user2.id,
-                    },
-                ]);
-            } catch (err) {
-                expect(err.status).to.equal(401);
-                return;
-            }
-            throw new Error('no error thrown');
+            await expect(request.patch(`/api/event/${event.id}/roles`, [
+                {
+                    type: Role.TRANSLATOR,
+                    userId: user2.id,
+                },
+            ]))
+                .to.be.rejected.and.eventually.have.property('status', 401);
         });
     });
 });

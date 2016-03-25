@@ -42,12 +42,7 @@ describe('Event WebSocket', function() {
 
     it('404s when event is not found', async function() {
         let client = new WebSocketTestClient();
-        try {
-            await client.connect('/event/ridiculous');
-        } catch (err) {
-            expect(err.message).to.include('404');
-            return;
-        }
-        throw new Error('error not thrown');
+        await expect(client.connect('/event/ridiculous'))
+            .to.be.rejected.and.eventually.have.property('message').which.matches(/404/);
     });
 });

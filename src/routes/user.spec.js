@@ -74,21 +74,15 @@ describe('User endpoint', function() {
         });
 
         it('rejects incomplete registration', async function() {
-            try {
-                await request.post('/api/user', {
-                    data: {
-                        id: 'lorem_user',
-                        password: '12345678',
-                        name: 'Lorem User',
-                        dateOfBirth: new Date(2000, 0, 1),
-                    },
-                });
-            } catch (err) {
-                expect(err.status).to.equal(400);
-                return;
-            }
-
-            throw new Error('no error thrown');
+            await expect(request.post('/api/user', {
+                data: {
+                    id: 'lorem_user',
+                    password: '12345678',
+                    name: 'Lorem User',
+                    dateOfBirth: new Date(2000, 0, 1),
+                },
+            }))
+                .to.be.rejected.and.eventually.have.property('status', 400);
         });
     });
 

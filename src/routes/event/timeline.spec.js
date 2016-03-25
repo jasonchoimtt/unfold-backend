@@ -40,19 +40,16 @@ describe('Timeline endpoint', function() {
     });
 
     it('creates a new self post', async function() {
+        let post = {
+            caption: 'I like self posts!',
+            tags: ['HK', 'BC'],
+        };
         const expectData = data => {
-            expect(data).to.have.property('caption', 'I like self posts!');
-            expect(data).to.have.property('data').that.is.null; // eslint-disable-line
-            expect(data).to.have.property('tags')
-                .to.include.something.equal('HK').and
-                .to.include.something.equal('BC');
+            expect(data).to.containSubset(post);
             expect(data).to.have.deep.property('author.id', user.id);
         };
 
-        let resp = await requestAuth.post(`/api/event/${event.id}/timeline`, {
-            caption: 'I like self posts!',
-            tags: ['HK', 'BC'],
-        });
+        let resp = await requestAuth.post(`/api/event/${event.id}/timeline`, post);
         expect(resp.status).to.equal(201);
         expectData(resp.data);
 
@@ -63,15 +60,16 @@ describe('Timeline endpoint', function() {
     });
 
     it('creates a new link post and requests scraping', async function() {
+        let post = {
+            caption: 'A link',
+            data: { url: 'http://www.example.com/' },
+        };
         const expectData = data => {
-            expect(data).to.have.property('caption', 'A link');
+            expect(data).to.containSubset(post);
             expect(data).to.have.deep.property('data.url', 'http://www.example.com/');
             expect(data).to.have.deep.property('author.id', user.id);
         };
-        let resp = await requestAuth.post(`/api/event/${event.id}/timeline`, {
-            caption: 'A link',
-            data: { url: 'http://www.example.com/' },
-        });
+        let resp = await requestAuth.post(`/api/event/${event.id}/timeline`, post);
         expect(resp.status).to.equal(201);
         expectData(resp.data);
 

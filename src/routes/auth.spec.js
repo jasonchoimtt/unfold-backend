@@ -38,16 +38,11 @@ describe('Authentication endpoint', function() {
     });
 
     it('rejects an incorrect password', async function() {
-        try {
-            await request.post('api/auth/', {
-                username: 'auth_test',
-                password: 'gibberish',
-            });
-        } catch (err) {
-            expect(err.status).to.equal(401);
-            return;
-        }
-        throw new Error('no error thrown');
+        await expect(request.post('api/auth/', {
+            username: 'auth_test',
+            password: 'gibberish',
+        }))
+            .to.be.rejected.and.eventually.have.property('status', 401);
     });
 
     it('renews a token', async function() {

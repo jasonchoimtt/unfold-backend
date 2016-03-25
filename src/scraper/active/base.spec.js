@@ -47,30 +47,21 @@ describe('Scraper dispatcher', function() {
         // Catch all
         route = new Route('//:domain+/:path*');
         matches('http://hello-world.online/').to.be.ok; // eslint-disable-line
-        matches('http://hello-world.online/').to.be.ok; // eslint-disable-line
     });
 
     let noop = async () => {};
 
     it('throws on no route', async function() {
         let dispatcher = new Dispatcher();
-        try {
-            await dispatcher.dispatch('http://example.com/non-sense');
-        } catch (err) {
-            return;
-        }
-        throw new Error('no error thrown');
+        await expect(dispatcher.dispatch('http://example.com/non-sense'))
+            .to.be.rejected; // eslint-disable-line
     });
 
     it('throws on missing route', async function() {
         let dispatcher = new Dispatcher();
         dispatcher.use('//non-sense.org/', noop);
-        try {
-            await dispatcher.dispatch('http://example.com/non-sense');
-        } catch (err) {
-            return;
-        }
-        throw new Error('no error thrown');
+        await expect(dispatcher.dispatch('http://example.com/non-sense'))
+            .to.be.rejected; // eslint-disable-line
     });
 
     it('resolves when dispatching is done', async function() {
