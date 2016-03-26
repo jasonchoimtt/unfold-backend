@@ -1,18 +1,20 @@
 import axios from 'axios';
 import _ from 'lodash';
-import { server } from './';
+import { main } from './';
+import { Config } from './config';
 import { User, Event } from './models';
 
+
+Config.testMode();
 
 /**
  * Hooks to initiate the test server.
  */
-const port = process.env.PORT || 3001;
-const ip = process.env.IP || '0.0.0.0';
+let server;
 
 before(function() {
     return new Promise((resolve, reject) => {
-        server.listen(port, ip);
+        ({ server } = main({ silent: true }));
         server.on('listening', resolve);
         server.on('error', reject);
     });
@@ -29,7 +31,7 @@ after(function() {
 
 function createAxios(options) {
     return axios.create(_.defaults(options, {
-        baseURL: `http://${ip}:${port}/`,
+        baseURL: `http://${Config.ip}:${Config.port}/`,
     }));
 }
 

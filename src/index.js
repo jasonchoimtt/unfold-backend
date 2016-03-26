@@ -1,46 +1,68 @@
 /**
- * Entry point for the main Node.js app.
+ * Global bootstrapping.
+ * Modules are loaded using the environmental variable APP_ENV.
  */
 if (process.env.NODE_ENV !== 'production')
     require('source-map-support/register');
 
-import http from 'http';
 import express from 'express';
-
-import { router } from './routes';
+import http from 'http';
+import _ from 'lodash';
+import { Config } from './config';
 import { errorHandler } from './errors';
-import { router as scraperAdmin } from './scraper/admin';
-
-import { app as wsApp } from './websocket';
 
 
-const app = express();
+/**
+ * Start the services specified in Config.appEnv.
+ */
+export function main(options) {
+    let serverComponents = _.intersection(Config.appEnv, ['rest', 'admin', 'websocket']);
+    let server;
+    if (serverComponents.length) {
+        let app = express();
+        app.set('x-powered-by', false);
+        app.set('trust proxy', true);
 
-app.set('x-powered-by', false);
-app.set('trust proxy', true);
+        // REST API app
+        if (Config.appEnv.indexOf('rest') !== -1)
+            app.use(require('./routes').app);
 
-app.use('/api', router);
+        // Admin app
+        if (Config.appEnv.indexOf('admin') !== -1)
+            app.use(require('./admin').app);
 
-app.use('/admin/kue', scraperAdmin);
-
-app.use(errorHandler);
-
-
-export const server = http.createServer(app);
-
-wsApp.attach(server);
+        app.use(errorHandler);
 
 
-if (require.main === module) {
-    let port = process.env.PORT || 3000;
-    let ip = process.env.IP || '0.0.0.0';
+        server = http.createServer(app);
 
-    server.listen(port, ip, function() {
-        let mode = process.env.NODE_ENV === 'production'
-                        ? 'production' : 'development';
-        console.log("App listening in " + mode + " on " + ip + ":" + port);
-    });
+        // WebSocket app
+        if (Config.appEnv.indexOf('websocket') !== -1)
+            require('./websocket').app.attach(server);
 
-    // Start the scraper on the same process for now
-    require('./scraper');
+
+        // Listen
+        let { port, ip } = Config;
+        server.listen(port, ip, function() {
+            let mode = process.env.NODE_ENV === 'production'
+                            ? 'production' : 'development';
+
+            if (!options || !options.silent) {
+                console.log(`App listening in ${mode} on ${ip}:${port}`);
+                console.log(`Components loaded: ${serverComponents.join(', ')}`);
+            }
+        });
+    }
+
+    if (Config.appEnv.indexOf('scraper') !== -1) {
+        if (!options || !options.silent)
+            console.log('Loading component: scraper');
+
+        require('./scraper');
+    }
+
+    return { server };
 }
+
+if (require.main === module)
+    main();

@@ -1,13 +1,19 @@
+/**
+ * REST API app.
+ */
 import express from 'express';
-
 import { Config } from '../config';
+
 import { authMiddleware } from '../auth';
+import { errorHandler } from '../errors';
+
 import { router as authRouter } from './auth';
 import { router as eventRouter } from './event';
 import { router as userRouter } from './user';
 
 
-export const router = express.Router();
+// /api router
+const router = express.Router();
 
 router.use('/', authMiddleware);
 
@@ -31,6 +37,18 @@ router.use('/auth', authRouter);
 router.use('/event', eventRouter);
 router.use('/user', userRouter);
 
-router.use('/', function(req, res) {
+router.get('/', function(req, res) {
     res.json({ message: 'It works!' });
 });
+
+// Catch-all error handler
+router.use(errorHandler);
+
+
+// The actual app
+export const app = express();
+
+app.set('x-powered-by', false);
+app.set('trust proxy', true);
+
+app.use('/api', router);
