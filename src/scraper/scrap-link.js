@@ -1,4 +1,4 @@
-import { queue, nodeify } from './queue';
+import { queue, nodeify } from '../structs/queue';
 import { dispatcher } from './active';
 import { Post, Tick } from '../models';
 

@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import { Subscriber, Channels } from '../stream';
+import { Subscriber, Channels } from '../structs/stream';
 import { withCreateEvent } from '../spec-utils';
 
 

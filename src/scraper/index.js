@@ -5,9 +5,4 @@
 if (process.env.NODE_ENV !== 'production')
     require('source-map-support/register');
 
-import { kue, queue } from './queue';
-
 import './scrap-link';
-
-
-export { kue, queue };

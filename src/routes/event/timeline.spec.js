@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { request, withCreateEvent, withCreatePosts } from '../../spec-utils';
-import { queue } from '../../scraper/queue';
+import { queue } from '../../structs/queue';
 
 describe('Timeline endpoint', function() {
     let requestAuth, event, user;

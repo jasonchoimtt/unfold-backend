@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import repl from 'repl';
 
-import * as jobs from './jobs';
-import {kue, queue} from './queue';
+import * as jobs from '../structs/jobs';
+import { kue, queue } from '../structs/queue';
 
 
 export { jobs, kue, queue };

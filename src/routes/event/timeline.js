@@ -5,7 +5,7 @@ import { parseJSON, catchError, validateOrThrow } from '../../utils';
 import { BadRequestError, NotFoundError, UnauthorizedError } from '../../errors';
 import { requireLogin } from '../../auth';
 import { User, Event, Role } from '../../models';
-import { ScrapLink } from '../../scraper/jobs';
+import { ScrapLink } from '../../structs/jobs';
 
 
 export const router = express.Router();

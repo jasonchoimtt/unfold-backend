@@ -2,7 +2,7 @@
  * Hooks for implementing the event stream.
  */
 import assert from 'assert';
-import { Publisher, Channels } from '../stream';
+import { Publisher, Channels } from '../structs/stream';
 
 import { Post } from './post';
 

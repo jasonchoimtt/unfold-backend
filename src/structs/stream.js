@@ -1,20 +1,6 @@
-import redislib from 'redis';
+import { fromCallback } from '../utils';
+import { createClient } from './redis';
 
-import { fromCallback } from './utils';
-import { Config } from './config';
-
-
-export function createClient() {
-    let redis = redislib.createClient({
-        url: Config.redis,
-    });
-
-    redis.on('error', err => {
-        console.error(err.stack || err);
-    });
-
-    return redis;
-}
 
 export const Subscriber = {
     subscriptions: {},

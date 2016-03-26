@@ -1,6 +1,6 @@
 import { NotFoundError } from '../errors';
 import { Event } from '../models';
-import { Subscriber, Channels } from '../stream';
+import { Subscriber, Channels } from '../structs/stream';
 
 
 /*
