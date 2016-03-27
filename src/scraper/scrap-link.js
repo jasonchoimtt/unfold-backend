@@ -4,10 +4,12 @@ import { Post, Tick } from '../models';
 
 
 queue.process('Scrap Link', nodeify(async function(job) {
-    console.log('Scrapping', job.data.url);
+    job.log('Scrapping', job.data.url);
     try {
         let result = await dispatcher.dispatch(job.data.url, job);
+        job.log(result);
         if (job.data.postId || job.data.tickId) {
+            job.log('Saving result to database');
             let obj;
             if (job.data.postId)
                 obj = Post.build({ id: job.data.postId }, { isNewRecord: false });
@@ -18,10 +20,10 @@ queue.process('Scrap Link', nodeify(async function(job) {
                 data: result,
             });
         }
-        console.log(result);
         return result;
+
     } catch (err) {
-        console.log(err.stack || err);
+        job.log(err.stack || err);
         throw err;
     }
 }));

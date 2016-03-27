@@ -1,6 +1,7 @@
 import { NotFoundError } from '../errors';
 import { Event } from '../models';
 import { Subscriber, Channels } from '../structs/stream';
+import { logger } from '../utils';
 
 
 /*
@@ -25,7 +26,7 @@ export async function eventStream(req, __, next) {
     let boundSend = conn.send.bind(conn);
 
     conn.on('error', err => {
-        console.error(err.stack || err);
+        logger.error('websocket-event-stream', err.stack || err);
         // 'close' will also be emitted on 'error'
     });
 

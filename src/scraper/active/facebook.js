@@ -6,12 +6,16 @@ import { PostData } from '../../models/post-data';
 export const dispatcher = new Dispatcher();
 
 dispatcher.use('//(www.)?facebook.com/:profile/posts/:id', async function(ctx, job) {
+    job.log('Scraper: Facebook post');
+
+    job.log('Scraping author profile');
     let profile = await client.get(`${ctx.params.profile}`, {
         params: {
             fields: 'id,name,username,link,picture',
         },
     }).backoff().data();
 
+    job.log('Scraping post');
     let post = await client.get(`${profile.id}_${ctx.params.id}`, {
         params: {
             fields: 'id,created_time,message,object_id,' +

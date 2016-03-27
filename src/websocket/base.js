@@ -1,6 +1,8 @@
 import { server as WebSocketServer } from 'websocket';
-import { matcher } from '../utils';
+import { matcher, logger } from '../utils';
 
+
+const TAG = 'websocket';
 
 // TODO: merge with scraper code
 export class Route {
@@ -27,7 +29,18 @@ export class WebSocketApp {
     dispatch(req) {
         // TODO: check req.origin
 
-        req.accept = req.accept.bind(req, null, req.origin);
+        let _accept = req.accept.bind(req, null, req.origin);
+        req.accept = () => {
+            let conn = _accept();
+            logger.info(TAG, `${req.remoteAddress} - Upgrade ${req.resource}`);
+
+            if (conn) {
+                conn.on('close', () => {
+                    logger.info(TAG, `${req.remoteAddress} - Disconnected ${req.resource}`);
+                });
+            }
+            return conn;
+        };
 
         let i = 0;
         let error = null;

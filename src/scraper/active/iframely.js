@@ -13,13 +13,13 @@ function rel(post, ...rels) {
 export const dispatcher = new Dispatcher();
 
 dispatcher.use('//:domain+/:path*', async function(ctx, job) {
+    job.log('Scraper: Iframely');
     let result = await fromCallback(iframely.run.bind(iframely))(ctx.url);
     let meta = result.meta;
-    job.log(result);
+    job.log('Result from iframely: ', result);
 
     let image = rel(result, 'image', 'thumbnail');
     let embed = rel(result, 'player', 'app', 'reader', 'survey', 'product', 'summary');
-    console.log(JSON.stringify(result, null, 2));
     return {
         // TODO: special
         rel: embed ? PostData.EMBED : image ? PostData.IMAGE : PostData.TEXT,

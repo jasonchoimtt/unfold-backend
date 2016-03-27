@@ -1,6 +1,7 @@
 import kue from 'kue';
 
 import { Config } from '../config';
+import { logger } from '../utils';
 
 
 export const queue = kue.createQueue({
@@ -8,7 +9,7 @@ export const queue = kue.createQueue({
 });
 
 queue.on('error', err => {
-    console.error(err.stack || err);
+    logger.error('kue', err.stack || err);
 });
 
 export { kue };

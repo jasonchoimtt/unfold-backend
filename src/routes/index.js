@@ -2,7 +2,9 @@
  * REST API app.
  */
 import express from 'express';
+import morgan from 'morgan';
 import { Config } from '../config';
+import { logger } from '../utils';
 
 import { authMiddleware } from '../auth';
 import { errorHandler } from '../errors';
@@ -50,5 +52,16 @@ export const app = express();
 
 app.set('x-powered-by', false);
 app.set('trust proxy', true);
+
+app.use(morgan('short', {
+    stream: {
+        write(contents) {
+            contents = contents.toString();
+            if (contents[contents.length - 1] === '\n')
+                contents = contents.substr(0, contents.length - 1);
+            logger.info('rest', contents);
+        },
+    },
+}));
 
 app.use('/api', router);

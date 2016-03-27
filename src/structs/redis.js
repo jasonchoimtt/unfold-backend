@@ -1,5 +1,6 @@
 import redis from 'redis';
 import { Config } from '../config';
+import { logger } from '../utils';
 
 
 export function createClient() {
@@ -8,7 +9,7 @@ export function createClient() {
     });
 
     client.on('error', err => {
-        console.error(err.stack || err);
+        logger.error('redis', err.stack || err);
     });
 
     return client;

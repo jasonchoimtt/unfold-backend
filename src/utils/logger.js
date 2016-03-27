@@ -25,7 +25,7 @@ export const logger = {
             // Use a syslog-ish formatting
             let priority = facility * 8 + level;
             let date = moment().format('MMM D HH:mm:ss');
-            let left = `<${priority}> ${date} ${hostname} ${tag} `;
+            let left = `<${priority}> ${date} ${hostname} ${tag}: `;
             let out = messages
                 .map(x => typeof x === 'string'
                     ? x : util.inspect(x, { depth: null }))

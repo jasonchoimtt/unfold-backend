@@ -8,9 +8,12 @@ if (process.env.NODE_ENV !== 'production')
 import express from 'express';
 import http from 'http';
 import _ from 'lodash';
+import { logger } from './utils';
 import { Config } from './config';
 import { errorHandler } from './errors';
 
+
+const TAG = 'app';
 
 /**
  * Start the services specified in Config.appEnv.
@@ -48,15 +51,15 @@ export function main(options) {
                             ? 'production' : 'development';
 
             if (!options || !options.silent) {
-                console.log(`App listening in ${mode} on ${ip}:${port}`);
-                console.log(`Components loaded: ${serverComponents.join(', ')}`);
+                logger.info(TAG, `App listening in ${mode} on ${ip}:${port}`);
+                logger.info(TAG, `Components loaded: ${serverComponents.join(', ')}`);
             }
         });
     }
 
     if (Config.appEnv.indexOf('scraper') !== -1) {
         if (!options || !options.silent)
-            console.log('Loading component: scraper');
+            logger.info(TAG, 'Loading component: scraper');
 
         require('./scraper');
     }
