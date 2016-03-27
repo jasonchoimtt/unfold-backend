@@ -14,8 +14,10 @@ describe('Server', function() {
                                              Config.accessControl.allowOrigin);
             expect(headers).to.have.property('access-control-max-age',
                                              Config.accessControl.maxAge.toString());
-            expect(headers).to.have.property('access-control-allow-headers',
-                                             'Authorization');
+            expect(headers).to.have.property('access-control-allow-headers')
+                .which.matches(/Authorization/).and
+                    .matches(/Content-Type/).and
+                    .matches(/Accept/);
         };
 
         let resp = await request.get('api/');
