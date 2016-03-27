@@ -1,8 +1,8 @@
 import Joi from 'joi';
-import { validateLanguageCode, joiLanguageCode } from './utils';
+import { validateLanguageCode, joiLanguageCode } from './validations';
 
 
-describe('Utility functions', function() {
+describe('Utility validation functions', function() {
     it('validateLanguageCode', function() {
         expect(validateLanguageCode('zh-hk')).to.equal('zh-HK');
         expect(validateLanguageCode(' zh-hk')).to.equal('zh-HK');
