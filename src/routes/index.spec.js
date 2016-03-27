@@ -26,6 +26,11 @@ describe('Server', function() {
             .which.matches(/Authorization/).and
                 .matches(/Content-Type/).and
                 .matches(/Accept/);
+        expect(resp.headers).to.have.property('access-control-allow-methods')
+            .which.matches(/GET/).and
+                .matches(/PUT/).and
+                .matches(/POST/).and
+                .matches(/PATCH/);
     });
 
     it('sets default cache control header correctly', async function() {

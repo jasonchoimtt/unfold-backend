@@ -23,7 +23,7 @@ router.use('/', function accessControl(req, res, next) {
     res.set('Access-Control-Allow-Origin', Config.accessControl.allowOrigin);
     res.set('Access-Control-Max-Age', Config.accessControl.maxAge);
     res.set('Access-Control-Allow-Headers', 'Authorization, Accept, Content-Type');
-    res.set('Access-Control-Allow-Methods', 'GET POST PUT PATCH DELETE OPTIONS');
+    res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
     next();
 });
 
