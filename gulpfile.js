@@ -3,6 +3,7 @@ var _ = require('lodash');
 
 var gulp = require('gulp');
 var gutil = require('gulp-util');
+var runSequence = require('run-sequence');
 
 var babel = require('gulp-babel');
 var eslint = require('gulp-eslint');
@@ -14,6 +15,8 @@ var docco = require('gulp-docco');
 
 
 const src = 'src/**/*.js';
+
+var notifyServer = _.noop;
 
 // Per-file incremental build
 function doBuild(src) {
@@ -29,7 +32,8 @@ function doBuild(src) {
             this.emit('end', err); // eslint-disable-line no-invalid-this
         })
         .pipe(sourcemaps.write('.', { sourceRoot: '/src' }))
-        .pipe(gulp.dest('lib'));
+        .pipe(gulp.dest('lib'))
+        .on('end', notifyServer);
 }
 gulp.task('build', () => {
     child_process.execSync('rm -rf lib');
@@ -43,8 +47,8 @@ gulp.task('dev:build', ['build'], () => {
 });
 
 gulp.task('serve', () => { server.listen({ path: 'lib/index.js' }); });
-gulp.task('dev:serve', ['serve'], () =>  {
-    gulp.watch('lib/**/*.js', _.debounce(() => { server.restart(); }, 250));
+gulp.task('dev:serve', ['serve'], () => {
+    notifyServer = _.debounce(() => { server.restart(); }, 250);
 });
 
 const docsSrc = 'src/docs/**/*.doc.js';
@@ -80,4 +84,4 @@ gulp.task('docs', () => {
 });
 
 gulp.task('default', ['build']);
-gulp.task('dev', ['dev:serve', 'dev:build']);
+gulp.task('dev', cb => { runSequence('dev:build', 'dev:serve', cb); });
