@@ -17,8 +17,6 @@ import { router as userRouter } from './user';
 // /api router
 const router = express.Router();
 
-router.use('/', authMiddleware);
-
 router.use('/', function accessControl(req, res, next) {
     res.set('Access-Control-Allow-Origin', Config.accessControl.allowOrigin);
     res.set('Access-Control-Max-Age', Config.accessControl.maxAge);
@@ -34,6 +32,8 @@ router.use('/', function cacheControl(req, res, next) {
     res.set('Cache-Control', 'private, max-age=0');
     next();
 });
+
+router.use('/', authMiddleware);
 
 router.use('/auth', authRouter);
 router.use('/event', eventRouter);

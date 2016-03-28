@@ -33,6 +33,17 @@ describe('Server', function() {
                 .matches(/PATCH/);
     });
 
+    it('sends access control headers even if authorization fails', async function() {
+        await expect(request.put(`api/`, {
+            something: 'stupid',
+        }, {
+            headers: { 'Authorization': 'funny thing' },
+        }))
+            .to.be.rejected.and.eventually
+                .include({ status: 401 }).and
+                .have.property('headers').which.has.property('access-control-allow-origin');
+    });
+
     it('sets default cache control header correctly', async function() {
         let resp = await request.get('api/');
         expect(resp.headers).to.have.property('cache-control', 'private, max-age=0');
