@@ -59,6 +59,24 @@ export async function createTestUser(id = 'test_user') {
     };
 }
 
+export function withCreateTestUser(id, callback) {
+    if (typeof id === 'function')
+        callback = id;
+    if (typeof id !== 'string')
+        id = 'test_user';
+
+    let user, requestAuth;
+    before(async function() {
+        ({ user, requestAuth } = await createTestUser(id));
+        if (callback)
+            callback({ user, requestAuth });
+    });
+
+    after(async function() {
+        await user.destroy();
+    });
+}
+
 export function withCreateEvent(callback) {
     let user, requestAuth, event;
     before(async function() {

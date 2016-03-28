@@ -1,12 +1,13 @@
 import _ from 'lodash';
-import { request, withCreateEvent, withCreatePosts } from '../../spec-utils';
+import { request, withCreateTestUser, withCreateEvent, withCreatePosts } from '../../spec-utils';
 import { queue } from '../../structs/queue';
 
 describe('Timeline endpoint', function() {
-    let requestAuth, event, user;
+    let requestAuth, event, user, requestAuth2;
 
     withCreateEvent(vars => { ({ requestAuth, event, user } = vars); });
     withCreatePosts(() => { return { event }; });
+    withCreateTestUser('test_user2', vars => { requestAuth2 = vars.requestAuth; });
 
     before(function() {
         queue.testMode.enter();
@@ -82,10 +83,12 @@ describe('Timeline endpoint', function() {
 
     it('requires authentication to create posts', async function() {
         await expect(
-            request.post(`/api/event/${event.id}/timeline`, {
+            requestAuth2.post(`/api/event/${event.id}/timeline`, {
                 caption: 'I like self posts!',
             }))
-            .to.be.rejected.and.eventually.have.property('status', 401);
+            .to.be.rejected.and.eventually
+                .include({ status: 401 }).and
+                .have.deep.property('data.error.message').which.matches(/only/);
     });
 
     it('rejects creating an invalid post', async function() {

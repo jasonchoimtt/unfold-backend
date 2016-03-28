@@ -54,7 +54,7 @@ router.post('/:id/timeline', requireLogin, parseJSON, catchError(async function(
     let role = await Event.build({ id: req.params.id }, { isNewRecord: false })
                 .hasUserWithRole(req.session.user.id, [Role.OWNER, Role.CONTRIBUTOR]);
     if (!role)
-        throw new UnauthorizedError();
+        throw new UnauthorizedError('only owners and contributors can post to the event');
 
     let data = validateOrThrow(req.body, creationSchema);
     if (!data.caption && !(data.data && data.data.url))

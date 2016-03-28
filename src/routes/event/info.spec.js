@@ -1,11 +1,16 @@
-import { request, createTestUser, withCreateEvent } from '../../spec-utils';
+import { request, withCreateTestUser, withCreateEvent } from '../../spec-utils';
 import { Role } from '../../models';
 
 
 describe('Event info endpoint', function() {
     let user, requestAuth, event;
+    let user2, requestAuth2;
 
     withCreateEvent(vars => { ({ user, requestAuth, event } = vars); });
+    withCreateTestUser('test_user2', vars => {
+        user2 = vars.user;
+        requestAuth2 = vars.requestAuth;
+    });
 
     it('delivers a brief list of events with basic information', async function() {
         let resp = await request.get('/api/event/');
@@ -88,20 +93,15 @@ describe('Event info endpoint', function() {
         }))
             .to.be.rejected.and.eventually.have.property('status', 401);
 
-        await expect(request.put(`/api/event/${event.id}`, {
+        await expect(requestAuth2.put(`/api/event/${event.id}`, {
             tags: ['Hong Kong', 'Social'],
         }))
-            .to.be.rejected.and.eventually.have.property('status', 401);
+            .to.be.rejected.and.eventually
+                .include({ status: 401 }).and
+                .have.deep.property('data.error.message').which.matches(/only/);
     });
 
     describe('roles', function() {
-        let user2;
-        before(async function() {
-            user2 = (await createTestUser('test_user2')).user;
-        });
-        after(async function() {
-            await user2.destroy();
-        });
 
         it('delivers a list of roles', async function() {
             let resp = await request.get(`/api/event/${event.id}/roles`);
@@ -148,13 +148,35 @@ describe('Event info endpoint', function() {
         });
 
         it('requires authentiction to change roles', async function() {
-            await expect(request.patch(`/api/event/${event.id}/roles`, [
+            await expect(requestAuth2.patch(`/api/event/${event.id}/roles`, [
                 {
                     type: Role.TRANSLATOR,
                     userId: user2.id,
                 },
             ]))
-                .to.be.rejected.and.eventually.have.property('status', 401);
+                .to.be.rejected.and.eventually
+                    .include({ status: 401 }).and
+                    .have.deep.property('data.error.message').which.matches(/only/);
+        });
+
+        it('rejects on invalid user id', async function() {
+            await expect(requestAuth.patch(`/api/event/${event.id}/roles`, [
+                {
+                    type: Role.TRANSLATOR,
+                    userId: 'ridiculous',
+                },
+                {
+                    type: Role.TRANSLATOR,
+                    userId: user2.id,
+                },
+            ]))
+                .to.be.rejected.and.eventually
+                    .include({ status: 400 }).and
+                    .have.deep.property('data.error.message').which.matches(/ridiculous/);
+
+            let resp = await request.get(`/api/event/${event.id}/roles`);
+            expect(resp.data).not.to.include.something
+                .that.satisfies(x => x.type === Role.OWNER && x.user.id === user2.id);
         });
     });
 });

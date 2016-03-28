@@ -1,6 +1,6 @@
 import express from 'express';
 import Joi from 'joi';
-import { ValidationError } from 'sequelize';
+import { UniqueConstraintError } from 'sequelize';
 import _ from 'lodash';
 
 import { parseJSON, catchError, validateOrThrow } from '../utils';
@@ -21,7 +21,7 @@ const updatableFields = {
 
 const creationSchema = Joi.object(_.extend(
     {
-        id: Joi.string().regex(/^[A-Za-z][A-Za-z0-9_]{4,31}$/).required(),
+        id: Joi.string().regex(/^[A-Za-z][A-Za-z0-9_]{4,31}$/, 'required').required(),
         password: Joi.string().min(8).required(),
         email: Joi.string().email().required(),
         dateOfBirth: Joi.date().iso().required(), // TODO: timezone issues
@@ -35,7 +35,7 @@ const updateSchema = Joi.object(updatableFields);
  */
 router.post('/', parseJSON, catchError(async function(req, res) {
     if (req.session)
-        throw new BadRequestError();
+        throw new BadRequestError('user already authenticated');
 
     let data = validateOrThrow(req.body, creationSchema);
 
@@ -45,7 +45,7 @@ router.post('/', parseJSON, catchError(async function(req, res) {
         await user.setPassword(req.body.password);
         await user.save();
     } catch (err) {
-        if (err instanceof ValidationError)
+        if (err instanceof UniqueConstraintError && err.get('id').length)
             throw new BadRequestError(`the "id" ${user.id} is already taken`);
         else
             throw err;
@@ -73,7 +73,7 @@ router.put('/:id', requireLogin, parseJSON, catchError(async function(req, res) 
         throw new NotFoundError();
 
     if (req.session.user.id !== user.id)
-        throw new UnauthorizedError();
+        throw new UnauthorizedError('only current user can edit their profile');
 
     let data = validateOrThrow(req.body, updateSchema);
     _.defaults(data.profile, user.profile);

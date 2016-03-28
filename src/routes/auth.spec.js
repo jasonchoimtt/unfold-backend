@@ -25,16 +25,11 @@ describe('Authentication endpoint', function() {
     });
 
     it('rejects a non-existent user', async function() {
-        try {
-            await request.post('api/auth/', {
-                username: 'invalid_user',
-                password: 'gibberish',
-            });
-        } catch (err) {
-            expect(err.status).to.equal(401);
-            return;
-        }
-        throw new Error('no error thrown');
+        await expect(request.post('api/auth/', {
+            username: 'invalid_user',
+            password: 'gibberish',
+        }))
+            .to.be.rejected.and.eventually.have.property('status', 401);
     });
 
     it('rejects an incorrect password', async function() {
@@ -57,5 +52,21 @@ describe('Authentication endpoint', function() {
         });
         expect(resp.data.token).not.to.be.null; // eslint-disable-line
         expect(resp.data.token).not.to.equal(token);
+    });
+
+    it('rejects an invalid request', async function() {
+        await expect(request.post('api/auth/', {
+            gibberish: 'true',
+        }))
+            .to.be.rejected.and.eventually
+                .include({ status: 400 }).and
+                .have.deep.property('data.error.message').which.matches(/gibberish/);
+
+        await expect(request.post('api/auth/', {
+            username: 'no_password',
+        }))
+            .to.be.rejected.and.eventually
+                .include({ status: 400 }).and
+                .have.deep.property('data.error.message').which.matches(/password/);
     });
 });

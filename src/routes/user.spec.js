@@ -3,7 +3,7 @@ import { User } from '../models';
 
 
 describe('User endpoint', function() {
-    let user, requestAuth;
+    let user, requestAuth, requestAuth2;
 
     beforeEach(async function() {
         ({ user, requestAuth } = await createTestUser());
@@ -12,6 +12,7 @@ describe('User endpoint', function() {
             email: 'test.user@example.com',
             dateOfBirth: new Date(1999, 11, 31),
         });
+        requestAuth2 = (await createTestUser('test_user2')).requestAuth;
     });
 
     afterEach(async function() {
@@ -46,21 +47,21 @@ describe('User endpoint', function() {
         });
 
         it('rejects registered names', async function() {
-            expect(
+            await expect(
                 request.post('/api/user', {
                     id: 'test_user',
                     password: '12345678',
                     name: 'Lorem User',
-                    email: 'lorem.user_example.com',
+                    email: 'lorem.user@example.com',
                     dateOfBirth: new Date(2000, 0, 1),
                 }))
                 .to.be.rejected.and.eventually
                     .include({ status: 400 })
-                    .and.have.property('data.error.message').which.matches(/test_user/);
+                    .and.have.deep.property('data.error.message').which.matches(/test_user/);
         });
 
         it('rejects invalid field', async function() {
-            expect(
+            await expect(
                 request.post('/api/user', {
                     id: 'lorem_user',
                     password: '12345678',
@@ -70,7 +71,8 @@ describe('User endpoint', function() {
                 }))
                 .to.be.rejected.and.eventually
                     .include({ status: 400 })
-                    .and.have.property('data.error.message').which.matches(/email/);
+                    .and.have.deep.property('data.error.message')
+                        .which.matches(/email/);
         });
 
         it('rejects incomplete registration', async function() {
@@ -109,9 +111,7 @@ describe('User endpoint', function() {
     });
 
     it('updates profile information', async function() {
-        let { requestAuth } = await createTestUser('test_user2');
-
-        let resp = await requestAuth.put('/api/user/test_user2', {
+        let resp = await requestAuth2.put('/api/user/test_user2', {
             name: 'Hate You',
             profile: {
                 description: 'I am a boy',
@@ -123,5 +123,17 @@ describe('User endpoint', function() {
 
         resp = await request.get('/api/user/test_user2');
         expect(resp.data).to.have.property('name', 'Hate You');
+    });
+
+    it('requires authentication to update profile information', async function() {
+        await expect(requestAuth.put('/api/user/test_user2', {
+            name: 'Love You',
+            profile: {
+                description: 'I am not a boy',
+            },
+        }))
+            .to.be.rejected.and.eventually
+                .include({ status: 401 }).and
+                .have.deep.property('data.error.message').which.matches(/only/);
     });
 });

@@ -1,12 +1,12 @@
 import express from 'express';
 import _ from 'lodash';
 import Joi from 'joi';
-import { ValidationError } from 'sequelize';
+import { ForeignKeyConstraintError } from 'sequelize';
 
 import { parseJSON, catchError, joiLanguageCode, validateOrThrow } from '../../utils';
 import { BadRequestError, NotFoundError, UnauthorizedError } from '../../errors';
 import { requireLogin } from '../../auth';
-import { Event, Role, User } from '../../models';
+import { Event, Role, User, sequelize } from '../../models';
 
 
 export const router = express.Router();
@@ -69,7 +69,7 @@ router.put('/:id', requireLogin, parseJSON, catchError(async function(req, res) 
     let role = await Event.build({ id: req.params.id }, { isNewRecord: false })
                 .hasUserWithRole(req.session.user.id, [Role.OWNER, Role.CONTRIBUTOR]);
     if (!role)
-        throw new UnauthorizedError();
+        throw new UnauthorizedError('only owners and contributors and update event information');
 
     let data = validateOrThrow(req.body, updateSchema);
 
@@ -93,34 +93,38 @@ router.get('/:id/roles', catchError(async function(req, res) {
 router.patch('/:id/roles', requireLogin, parseJSON, catchError(async function(req, res) {
     if (!await Event.build({ id: req.params.id }, { isNewRecord: false })
             .hasUserWithRole(req.session.user.id, Role.OWNER))
-        throw new UnauthorizedError();
+        throw new UnauthorizedError('only owners can update event roles');
 
     let data = validateOrThrow(req.body, roleUpdateSchema);
 
-    try {
-        await Promise.all(data.map(role => {
+    await sequelize.transaction(t => {
+        return Promise.all(data.map(role => {
             if (role.type === null) {
                 return Role.destroy({
                     where: {
                         userId: role.userId,
                         eventId: req.params.id,
                     },
-                });
+                    transaction: t,
+                }); // ignoring the result
             } else {
                 // Keep curly brace to avoid hitting babel bug
                 return Role.upsert({
                     userId: role.userId,
                     eventId: req.params.id,
                     type: role.type,
-                });
+                }, {
+                    transaction: t,
+                })
+                    .catch(err => {
+                        if (err instanceof ForeignKeyConstraintError &&
+                                err.index && err.index.match(/userId/))
+                            throw new BadRequestError(`user ${role.userId} does not exist`);
+                        throw err;
+                    });
             }
         }));
-    } catch (err) {
-        if (err instanceof ValidationError)
-            throw new BadRequestError(); // TODO: reject invalid id
-        else
-            throw err;
-    }
+    });
 
     let roles = await Event.build({ id: req.params.id }, { isNewRecord: false }).getRoles({
         include: [User],
