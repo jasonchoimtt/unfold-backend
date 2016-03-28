@@ -10,7 +10,7 @@ import http from 'http';
 import _ from 'lodash';
 import { logger } from './utils';
 import { Config } from './config';
-import { errorHandler } from './errors';
+import { errorHandler, NotFoundError } from './errors';
 
 
 const TAG = 'app';
@@ -33,6 +33,8 @@ export function main(options) {
         // Admin app
         if (Config.appEnv.indexOf('admin') !== -1)
             app.use(require('./admin').app);
+
+        app.use((req, res, next) => { next(new NotFoundError()); });
 
         app.use(errorHandler);
 

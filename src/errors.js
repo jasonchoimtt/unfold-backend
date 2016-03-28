@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { logger } from './utils';
 
 
 export const defaultErrorMessage = 'Internal server error';
@@ -34,11 +35,14 @@ export const NotFoundError = errorFactory('NotFoundError', 404, 'Not found');
 
 export function errorHandler(err, req, res, next) {
     if (res.headersSent) {
+        logger.error('rest', 'Headers already sent while handling error:\n', err.stack || err);
         next(err);
     } else if (err.status && err.visible) {
         res.status(err.status);
         res.send({ error: err });
     } else {
-        next(err);
+        logger.error('rest', 'Unhandled error:\n', err.stack || err);
+        res.status(500);
+        res.send({ error: new ServerError() });
     }
 }

@@ -1,4 +1,5 @@
 import sinon from 'sinon';
+import { Config } from '../config';
 import { logger } from './logger';
 
 
@@ -6,13 +7,13 @@ describe('Logger', function() {
     let spy, oldLogLevel;
     beforeEach(function() {
         spy = sinon.stub(logger, 'write');
-        oldLogLevel = logger.logLevel;
-        logger.logLevel = logger.levels.INFO;
+        oldLogLevel = Config.logLevel;
+        Config.logLevel = 'INFO';
     });
 
     afterEach(function() {
         logger.write.restore();
-        logger.logLevel = oldLogLevel;
+        Config.logLevel = oldLogLevel;
     });
 
     it('logs with the correct level', function() {
@@ -42,7 +43,7 @@ describe('Logger', function() {
     });
 
     it('sets up log level correctly', function() {
-        logger.logLevel = logger.levels.ERROR;
+        Config.logLevel = 'ERROR';
         logger.warning('logger-test', 'not printed');
         expect(spy).not.to.have.been.called; // eslint-disable-line
 

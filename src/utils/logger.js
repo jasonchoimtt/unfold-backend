@@ -3,6 +3,8 @@ import util from 'util';
 import _ from 'lodash';
 import moment from 'moment';
 
+import { Config } from '../config';
+
 
 const facility = 1; // user
 const hostname = os.hostname();
@@ -49,7 +51,12 @@ export const logger = {
         EMERGENCY: 0,
         SILENT: -1, // Only for setting log level
     },
-    logLevel: process.env.LOG_LEVEL,
+    get logLevel() {
+        let level = logger.levels[Config.logLevel.toUpperCase()];
+        return typeof level !== 'undefined'
+                ? level
+                : logger.INFO;
+    },
 };
 
 _.extend(logger, logger.levels);
@@ -57,13 +64,3 @@ _.extend(logger, logger.levels);
 _.forEach(logger.levels, (level, key) => {
     logger[key.toLowerCase()] = logger.log.bind(logger, level);
 });
-
-logger.logLevel = process.env.LOG_LEVEL || logger.INFO;
-
-if (typeof logger.logLevel === 'string')
-    logger.logLevel = logger.levels[logger.logLevel];
-
-if (!_.findKey(logger.levels, x => x === logger.logLevel)) {
-    logger.logLevel = logger.levels.INFO;
-    logger.warning('logging', `Invalid log level: ${process.env.LOG_LEVEL}`);
-}
