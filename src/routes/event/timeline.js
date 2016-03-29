@@ -13,8 +13,8 @@ export const router = express.Router();
 const querySchema = Joi.object({
     begin: Joi.date().iso(),
     end: Joi.date().iso(),
-    limit: Joi.number().integer().min(0).max(100).default(100),
-});
+    limit: Joi.number().integer().min(0).max(10000).default(10000),
+}).required();
 
 const creationSchema = Joi.object({
     caption: Joi.string().max(10000),
@@ -22,7 +22,7 @@ const creationSchema = Joi.object({
         url: Joi.string().uri({ scheme: ['http', 'https'] }),
     },
     tags: Joi.array().items(Joi.string().trim()),
-});
+}).required();
 
 router.get('/:id/timeline', catchError(async function(req, res) {
     let event = await Event.findById(req.params.id);

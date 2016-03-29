@@ -11,7 +11,10 @@ const requestSchema = Joi.object({
     username: Joi.string().regex(/^[A-Za-z][A-Za-z0-9_]{4,31}$/, 'required'),
     password: Joi.string().min(8),
     token: Joi.string().min(1),
-}).xor('username', 'token').with('username', 'password');
+})
+    .xor('username', 'token')
+    .xor('password', 'token')
+    .required();
 
 router.post('/', parseJSON, catchError(async function(req, res) {
     let data = validateOrThrow(req.body, requestSchema);

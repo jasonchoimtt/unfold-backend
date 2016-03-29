@@ -12,23 +12,20 @@ import { User } from '../models';
 export const router = express.Router();
 
 const requiredFields = ['name'];
-const updatableFields = {
+
+const updateSchema = Joi.object({
     name: Joi.string().min(1).max(255),
     profile: {
         description: Joi.string(),
     },
-};
+}).required();
 
-const creationSchema = Joi.object(_.extend(
-    {
-        id: Joi.string().regex(/^[A-Za-z][A-Za-z0-9_]{4,31}$/, 'required').required(),
-        password: Joi.string().min(8).required(),
-        email: Joi.string().email().required(),
-        dateOfBirth: Joi.date().iso().required(), // TODO: timezone issues
-    },
-    _.mapValues(updatableFields, (v, k) => requiredFields.indexOf(k) !== -1 ? v.required() : v)
-));
-const updateSchema = Joi.object(updatableFields);
+const creationSchema = updateSchema.keys({
+    id: Joi.string().regex(/^[A-Za-z][A-Za-z0-9_]{4,31}$/, 'required').required(),
+    password: Joi.string().min(8).required(),
+    email: Joi.string().email().required(),
+    dateOfBirth: Joi.date().iso().required(), // TODO: timezone issues
+}).requiredKeys(requiredFields);
 
 /**
  * Registration endpoint

@@ -24,7 +24,7 @@ const querySchema = Joi.object({
     begin: Joi.date().iso(),
     end: Joi.date().iso(),
     resolution: Joi.number().integer().min(3600).default(86400),
-});
+}).required();
 
 router.get('/:id/timegram', catchError(async function(req, res) {
     let event = await Event.findById(req.params.id);

@@ -63,6 +63,13 @@ describe('Event info endpoint', function() {
     });
 
     it('rejects invalid data', async function() {
+        await expect(requestAuth.post(`/api/event/`, {
+            title: 'A New Event',
+        }))
+            .to.be.rejected.and.eventually
+                .have.include({ status: 400 }).and
+                .have.deep.property('data.error.message').which.matches(/location/);
+
         await expect(requestAuth.put(`/api/event/${event.id}`, {
             tags: '123',
         }))

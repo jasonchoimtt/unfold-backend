@@ -1,5 +1,4 @@
 import express from 'express';
-import _ from 'lodash';
 import Joi from 'joi';
 import { ForeignKeyConstraintError } from 'sequelize';
 
@@ -12,7 +11,8 @@ import { Event, Role, User, sequelize } from '../../models';
 export const router = express.Router();
 
 const requiredFields = ['title', 'location'];
-const updatableFields = {
+
+const updateSchema = Joi.object({
     title: Joi.string().min(3).max(255).trim(),
     location: Joi.string().min(2).max(255).trim(),
 
@@ -25,16 +25,14 @@ const updatableFields = {
     endedAt: Joi.alternatives(Joi.date().iso(), Joi.any().valid(null)),
     timezone: Joi.number().min(-12).max(12),
     language: joiLanguageCode().trim().lowercase(),
-};
+}).required();
 
-const creationSchema = Joi.object(
-    _.mapValues(updatableFields, (v, k) => requiredFields.indexOf(k) !== -1 ? v.required() : v));
-const updateSchema = Joi.object(updatableFields);
+const creationSchema = updateSchema.requiredKeys(requiredFields);
 
 const roleUpdateSchema = Joi.array().items(Joi.object({
     type: Joi.any().valid(...Role.types, null).required(),
     userId: Joi.string().required(),
-}));
+})).required();
 
 /*
  * Event info endpoint
