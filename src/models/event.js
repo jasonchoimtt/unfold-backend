@@ -3,6 +3,7 @@ import { sequelize } from './sequelize';
 
 import { Role } from './role';
 import { Post } from './post';
+import { Source } from './source';
 
 
 export const Event = sequelize.define('event', {
@@ -97,6 +98,15 @@ Event.hasMany(Role, {
 
 Event.hasMany(Post, {
     as: 'posts',
+    foreignKey: {
+        name: 'eventId',
+        allowNull: false,
+    },
+    onDelete: 'CASCADE',
+});
+
+Event.hasMany(Source, {
+    as: 'sources',
     foreignKey: {
         name: 'eventId',
         allowNull: false,
