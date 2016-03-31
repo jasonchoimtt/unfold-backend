@@ -56,7 +56,12 @@ router.post('/:id/timeline', requireLogin, parseJSON, catchError(async function(
     if (!role)
         throw new UnauthorizedError('only owners and contributors can post to the event');
 
-    let data = validateOrThrow(req.body, creationSchema);
+    // Allow admin to set createdAt, for testing reasons
+    let schema = creationSchema;
+    if (req.session.user.isAdmin)
+        schema = schema.keys({ createdAt: Joi.date().iso() });
+
+    let data = validateOrThrow(req.body, schema);
     if (!data.caption && !(data.data && data.data.url))
         throw new BadRequestError('either "caption" or "data.url" must be present');
 

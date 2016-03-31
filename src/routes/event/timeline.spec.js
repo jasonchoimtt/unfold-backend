@@ -1,5 +1,7 @@
 import _ from 'lodash';
-import { request, withCreateTestUser, withCreateEvent, withCreatePosts } from '../../spec-utils';
+import { request,
+    createTestUser, withCreateTestUser,
+    withCreateEvent, withCreatePosts } from '../../spec-utils';
 import { queue } from '../../structs/queue';
 
 describe('Timeline endpoint', function() {
@@ -79,6 +81,24 @@ describe('Timeline endpoint', function() {
 
         expect(queue.testMode.jobs).to.have.length(1);
         expect(queue.testMode.jobs[0]).to.have.property('type', 'Scrap Link');
+    });
+
+    it('allow admins to backdate a post', async function() {
+        let admin = await createTestUser('test_user', { isAdmin: true });
+
+        try {
+            let date = new Date(1989, 0, 13, 4, 2, 1).toJSON();
+            let resp = await admin.requestAuth.post(`/api/event/${event.id}/timeline`, {
+                caption: 'Old post',
+                createdAt: date,
+            });
+
+            expect(resp.data).to.have.property('createdAt', date);
+            resp = await request.get(`/api/event/${event.id}/timeline`);
+            expect(resp.data.posts).to.include.something.which.has.property('createdAt', date);
+        } finally {
+            await admin.user.update({ isAdmin: false });
+        }
     });
 
     it('requires authentication to create posts', async function() {
