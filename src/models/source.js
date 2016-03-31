@@ -1,5 +1,4 @@
 import Sequelize from 'sequelize';
-import _ from 'lodash';
 import { sequelize } from './sequelize';
 
 import { sources } from './sources';
@@ -22,18 +21,9 @@ export const Source = sequelize.define('source', {
         defaultValue: {},
     },
 }, {
-    instanceMethods: {
-        getMeta() {
-            let spec = _.find(sources, x => x.type === this.type);
-            if (!spec)
-                throw new Error('Invalid source type');
-
-            return spec.getMeta(this.config);
-        },
-        mergeConfig() {
-            return _.extend(this.getMeta(), this.toJSON());
-        },
-    },
+    indexes: [
+        { unique: true, fields: ['type', 'eventId'] },
+    ],
     classMethods: {
         sources,
     },

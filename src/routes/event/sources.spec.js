@@ -12,18 +12,15 @@ describe('Event sources endpoint', function() {
 
     it('delivers a list of sources', async function() {
         await event.createSource({
-            type: 'TWITTER_USER',
-            config: { section: 'realdrumpf' },
+            type: 'twitter',
+            config: { users: ['realdrumpf'] },
         });
 
         let resp = await requestAuth.get(`/api/event/${event.id}/sources`);
 
         expect(resp.data).to.have.lengthOf(1).and
             .include.something.that.satisfies(
-                x => x.type === 'TWITTER_USER' && x.config.section === 'realdrumpf');
-
-        expect(resp.data).to.include.something.that.satisfies(
-            x => x.name.match(/realdrumpf/) && x.url.match(/realdrumpf/));
+                x => x.type === 'twitter' && x.config.users.indexOf('realdrumpf') !== -1);
     });
 
     it('creates new sources and performs validation', async function() {
@@ -31,29 +28,25 @@ describe('Event sources endpoint', function() {
 
         let resp = await requestAuth.patch(`/api/event/${event.id}/sources`, [
             {
-                type: 'TWITTER_USER',
-                config: { section: 'realomama' },
+                type: 'twitter',
+                config: { hashtags: ['#MakeHKGreatAgain'] },
             },
         ]);
 
         expect(resp.data).to.have.lengthOf(1).and
             .include.something.that.satisfies(
-                x => x.type === 'TWITTER_USER' && x.config.section === 'realomama');
-
-        expect(resp.data).to.include.something.that.satisfies(
-            x => x.name.match(/realomama/) && x.url.match(/realomama/));
+                x => x.type === 'twitter' && x.config.hashtags.indexOf('MakeHKGreatAgain') !== -1);
 
         const fails = [
             [{
                 type: null,
             }],
             [{
-                type: 'RIDICULOUS',
+                type: 'ridiculous',
                 config: {},
             }],
             [{
-                id: resp.data[0].id,
-                type: 'TWITTER_USER',
+                type: 'twitter',
                 // missing config
             }],
         ];
@@ -67,27 +60,29 @@ describe('Event sources endpoint', function() {
     it('changes and deletes a source', async function() {
         let resp = await requestAuth.patch(`/api/event/${event.id}/sources`, [
             {
-                type: 'TWITTER_USER',
-                config: { section: 'realomama' },
+                type: 'twitter',
+                config: { users: ['realomama'] },
             },
         ]);
 
         resp = await requestAuth.patch(`/api/event/${event.id}/sources`, [
             {
-                id: resp.data[0].id,
-                type: 'TWITTER_USER',
-                config: { section: 'fakeomama' },
+                type: 'twitter',
+                config: { hashtags: ['MakeHKGreatAgain'] },
             },
         ]);
 
         expect(resp.data).to.have.lengthOf(1).and
             .include.something.that.satisfies(
-                x => x.type === 'TWITTER_USER' && x.config.section === 'fakeomama');
+                x => x.type === 'twitter' &&
+                x.config.hashtags.indexOf('MakeHKGreatAgain') !== -1 &&
+                x.config.users.length === 0
+            );
 
         resp = await requestAuth.patch(`/api/event/${event.id}/sources`, [
             {
-                id: resp.data[0].id,
-                type: null,
+                type: 'twitter',
+                config: null,
             },
         ]);
 
