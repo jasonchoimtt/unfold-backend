@@ -35,6 +35,11 @@ export const User = sequelize.define('user', {
         allowNull: false,
         defaultValue: false,
     },
+    isAdmin: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+    },
     dateOfBirth: {
         type: Sequelize.DATE,
         allowNull: true,
@@ -59,9 +64,17 @@ export const User = sequelize.define('user', {
     },
     instanceMethods: {
         get: plainGetterFactory((obj, options) => {
-            let attributes = ['id', 'name', 'createdAt', 'profile'];
-            if (options.attributeSet === 'private')
-                attributes = attributes.concat(['email', 'dateOfBirth']);
+            let attributes;
+
+            if (options.attributeSet === 'session') {
+                attributes = ['id', 'name', 'isAdmin'];
+
+            } else {
+                attributes = ['id', 'name', 'createdAt', 'profile'];
+                if (options.attributeSet === 'private')
+                    attributes = attributes.concat(['email', 'dateOfBirth']);
+            }
+
             return _.pick(obj, attributes);
         }),
 

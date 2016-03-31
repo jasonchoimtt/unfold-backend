@@ -1,5 +1,6 @@
 import { request } from '../spec-utils';
 import { User } from '../models';
+import { parse } from '../auth';
 
 
 describe('Authentication endpoint', function() {
@@ -12,7 +13,7 @@ describe('Authentication endpoint', function() {
     });
 
     after(async function() {
-        await User.destroy({ where: { id: 'auth_test' } });
+        await User.destroy({ where: { id: { $in: ['auth_test', 'admin_test'] } } });
     });
 
     it('authenticates by username and password', async function() {
@@ -68,5 +69,24 @@ describe('Authentication endpoint', function() {
             .to.be.rejected.and.eventually
                 .include({ status: 400 }).and
                 .have.deep.property('data.error.message').which.matches(/password/);
+    });
+
+    it('allows admin to masquerade as anybody', async function() {
+        let user = User.build({
+            id: 'admin_test',
+            isAdmin: true,
+        });
+        await user.setPassword('test_pwd');
+        await user.save();
+
+        let resp = await request.post('api/auth/', {
+            username: 'admin_test',
+            password: 'test_pwd',
+            masquerade: 'auth_test',
+        });
+
+        let session = await parse(resp.data.token);
+        expect(session.user.id).to.equal('auth_test');
+        expect(session.user.isAdmin).to.be.true; // eslint-disable-line
     });
 });

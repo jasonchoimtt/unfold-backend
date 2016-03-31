@@ -40,10 +40,13 @@ function createAxios(options) {
  */
 export const request = createAxios();
 
-export async function createTestUser(id = 'test_user') {
+export async function createTestUser(id = 'test_user', options) {
     let [user] = await User.findOrCreate({ where: { id: id } });
     await user.setPassword('test_pwd');
+    if (options)
+        user.set(options);
     user = await user.save();
+
     let resp = await request.post('api/auth/', {
         username: id,
         password: 'test_pwd',
@@ -59,15 +62,17 @@ export async function createTestUser(id = 'test_user') {
     };
 }
 
-export function withCreateTestUser(id, callback) {
-    if (typeof id === 'function')
+export function withCreateTestUser(id, callback, options) {
+    if (typeof id === 'function') {
         callback = id;
+        options = callback;
+    }
     if (typeof id !== 'string')
         id = 'test_user';
 
     let user, requestAuth;
     before(async function() {
-        ({ user, requestAuth } = await createTestUser(id));
+        ({ user, requestAuth } = await createTestUser(id, options));
         if (callback)
             callback({ user, requestAuth });
     });

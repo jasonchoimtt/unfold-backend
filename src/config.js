@@ -17,7 +17,7 @@ export const Config = {
     jwtKey: process.env.JWT_KEY || 'unfold_development_key',
     jwtOptions: {
         algorithm: 'HS256',
-        expiresIn: '15m',
+        expiresIn: '365 days', // for testing
     },
 
     accessControl: {
