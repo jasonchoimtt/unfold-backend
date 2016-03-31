@@ -1,4 +1,4 @@
-import { request, withCreateTestUser, withCreateEvent } from '../../spec-utils';
+import { request, withCreateTestUser, withCreateEvent, withCreatePosts } from '../../spec-utils';
 import { Role } from '../../models';
 
 
@@ -11,6 +11,7 @@ describe('Event info endpoint', function() {
         user2 = vars.user;
         requestAuth2 = vars.requestAuth;
     });
+    withCreatePosts(() => { return { event }; });
 
     it('delivers a brief list of events with basic information', async function() {
         let resp = await request.get('/api/event/');
@@ -185,5 +186,16 @@ describe('Event info endpoint', function() {
             expect(resp.data).not.to.include.something
                 .that.satisfies(x => x.type === Role.OWNER && x.user.id === user2.id);
         });
+    });
+
+    it('produces a summary of all tags', async function() {
+        let resp = await request.get(`/api/event/${event.id}/tags`);
+
+        expect(resp.data).to.have.lengthOf(2);
+        expect(resp.data).to.include.something
+            .which.satisfies(x => x.name === 'First' && x.frequency === 1);
+
+        expect(resp.data).to.include.something
+            .which.satisfies(x => x.name === 'Second' && x.frequency === 2);
     });
 });

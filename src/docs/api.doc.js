@@ -171,6 +171,26 @@ let { id } = await request('Create event', `
     }
 `);
 
+// Create some sample data.
+let samples = [
+    { caption: 'It works!',
+      tags: ['HK'],
+      data: { url: 'http://example.com' } },
+    { caption: 'Interesting ah',
+      tags: ['HK', 'TW'] },
+    { caption: 'Good day!' },
+    { caption: 'It works!',
+      tags: ['HK'] },
+];
+
+await Promise.all(samples.map((body, i) => {
+    return request(`Create sample post ${i}`, `
+        POST ${endpoint}/event/${id}/timeline
+        Authorization: ${token}
+        ${JSON.stringify(body)}
+    `);
+}));
+
 // ### GET /event/:id - Get event information
 
 // **Public.** Retrieve the information of and the roles associated with the
@@ -212,7 +232,7 @@ await request('Get roles associated with event', `
 `);
 
 
-// ### PATCH /event/:id/roles Update roles associated with event
+// ### PATCH /event/:id/roles - Update roles associated with event
 
 // **Owner.** Update the roles associated with the event. Provide an array of
 // role objects specifying `type` and `userId`.
@@ -224,6 +244,16 @@ await request('Get roles associated with event', `
 /* await request('Updates roles associated with event', `
     PATCH ${endpoint}/event/${id}/roles
 `); */
+
+// ### GET /event/:id/tags - Get tags in event
+
+// **Public.** Returns a list of tags with their counts of posts.
+
+/* !request Get tags in event */
+
+await request('Get tags in event', `
+    GET ${endpoint}/event/${id}/tags
+`);
 
 // /event/:id/timeline - Event timeline
 // ------------------------------------

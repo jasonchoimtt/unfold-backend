@@ -110,10 +110,12 @@ export function withCreatePosts(input) {
         await Promise.all([
             {
                 caption: 'Hello, World!',
+                tags: ['First', 'Second'],
                 createdAt: new Date(2014, 9, 26, 19),
             },
             {
                 caption: 'Best website ever',
+                tags: ['Second'],
                 data: { url: 'http://www.example.com/' },
                 createdAt: new Date(2014, 9, 26, 20),
             },

@@ -5,7 +5,7 @@ import { ForeignKeyConstraintError } from 'sequelize';
 import { parseJSON, catchError, joiLanguageCode, validateOrThrow } from '../../utils';
 import { BadRequestError, NotFoundError, UnauthorizedError } from '../../errors';
 import { requireLogin } from '../../auth';
-import { Event, Role, User, sequelize } from '../../models';
+import { Event, Role, User, Post, sequelize } from '../../models';
 
 
 export const router = express.Router();
@@ -128,4 +128,27 @@ router.patch('/:id/roles', requireLogin, parseJSON, catchError(async function(re
         include: [User],
     });
     res.json(roles);
+}));
+
+router.get('/:id/tags', catchError(async function(req, res) {
+    let tableName = Post.getTableName();
+
+    let summary = await sequelize.query(`
+        select
+            count(*) as "frequency",
+            unnest("tags") as "name"
+        from
+            ${tableName}
+        where
+            "eventId" = :eventId
+        group by
+            "name";
+    `, {
+        type: sequelize.QueryTypes.SELECT,
+        replacements: {
+            eventId: req.params.id,
+        },
+    });
+    summary.forEach(x => { x.frequency = parseInt(x.frequency, 10); });
+    res.json(summary);
 }));
