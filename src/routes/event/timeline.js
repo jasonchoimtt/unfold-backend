@@ -17,7 +17,7 @@ const querySchema = Joi.object({
 }).required();
 
 const creationSchema = Joi.object({
-    caption: Joi.string().max(10000),
+    caption: Joi.string().allow('').max(10000),
     data: {
         url: Joi.string().uri({ scheme: ['http', 'https'] }),
     },

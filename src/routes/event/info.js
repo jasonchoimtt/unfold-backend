@@ -18,8 +18,8 @@ const updateSchema = Joi.object({
 
     tags: Joi.array().items(Joi.string().trim()).unique(),
 
-    description: Joi.string().max(255).trim(),
-    information: Joi.string().max(10000).trim(),
+    description: Joi.string().allow('').max(255).trim(),
+    information: Joi.string().allow('').max(10000).trim(),
 
     startedAt: Joi.date().iso(),
     endedAt: Joi.alternatives(Joi.date().iso(), Joi.any().valid(null)),
