@@ -7,9 +7,9 @@ import { Post } from './post';
 
 export const Event = sequelize.define('event', {
     id: {
-        type: Sequelize.UUID,
+        type: Sequelize.BIGINT,
         primaryKey: true,
-        defaultValue: Sequelize.UUIDV4,
+        autoIncrement: true,
     },
     title: {
         type: Sequelize.STRING(255),

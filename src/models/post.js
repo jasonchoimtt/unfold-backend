@@ -10,9 +10,9 @@ import { plainGetterFactory } from './utils';
 
 export const Post = sequelize.define('post', _.assign({}, PostData.attributes, {
     id: {
-        type: Sequelize.UUID,
+        type: Sequelize.BIGINT,
         primaryKey: true,
-        defaultValue: Sequelize.UUIDV4,
+        autoIncrement: true,
     },
     caption: {
         type: Sequelize.TEXT,
