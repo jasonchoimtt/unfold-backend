@@ -1,4 +1,4 @@
-import Sequelize from 'sequelize';
+import Sequelize, { fn, col, where } from 'sequelize';
 import { sequelize } from './sequelize';
 
 import * as bcrypt from 'bcrypt';
@@ -45,6 +45,9 @@ export const User = sequelize.define('user', {
         defaultValue: {},
     },
 }, {
+    indexes: [
+        { unique: true, name: 'users_lower_id',fields: [fn('LOWER', col('id'))] },
+    ],
     getterMethods: {
         active() {
             return this.password !== null && this.email !== null;
@@ -71,6 +74,20 @@ export const User = sequelize.define('user', {
         async checkPassword(plaintext) {
             // always returns false if this.passwprd === ''
             return await fromCallback(bcrypt.compare)(plaintext, this.password);
+        },
+    },
+    classMethods: {
+        /**
+         * Find User by ID in a case-insensitive manner.
+         */
+        findById(id, options) {
+            if (Buffer.isBuffer(id))
+                id = id.toString('utf8');
+            options = _.defaults({
+                where: where(fn('LOWER', col('id')), id.toLowerCase()),
+            }, options);
+
+            return this.findOne(options);
         },
     },
 });

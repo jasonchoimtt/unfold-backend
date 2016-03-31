@@ -42,7 +42,8 @@ router.post('/', parseJSON, catchError(async function(req, res) {
         await user.setPassword(req.body.password);
         await user.save();
     } catch (err) {
-        if (err instanceof UniqueConstraintError && err.get('id').length)
+        if (err instanceof UniqueConstraintError &&
+                err.errors.some(x => x.path.indexOf('id') !== -1))
             throw new BadRequestError(`the "id" ${user.id} is already taken`);
         else
             throw err;

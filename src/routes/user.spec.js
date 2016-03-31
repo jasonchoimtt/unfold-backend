@@ -49,6 +49,18 @@ describe('User endpoint', function() {
         it('rejects registered names', async function() {
             await expect(
                 request.post('/api/user', {
+                    id: 'TEST_user', // case-insensitive
+                    password: '12345678',
+                    name: 'Lorem User',
+                    email: 'lorem.user@example.com',
+                    dateOfBirth: new Date(2000, 0, 1),
+                }))
+                .to.be.rejected.and.eventually
+                    .include({ status: 400 })
+                    .and.have.deep.property('data.error.message').which.matches(/TEST_user/);
+
+            await expect(
+                request.post('/api/user', {
                     id: 'test_user',
                     password: '12345678',
                     name: 'Lorem User',
@@ -97,6 +109,10 @@ describe('User endpoint', function() {
         expect(resp.data).not.to.have.property('email');
         expect(resp.data).not.to.have.property('dateOfBirth');
         expect(resp.data).to.have.property('profile'); // = {}
+    });
+
+    it('is case-insensitive in displaying profile', async function() {
+        expect(await request.get('/api/user/TEST_user')).to.be.ok; // eslint-disable-line
     });
 
     it('displays a complete private user profile', async function() {
