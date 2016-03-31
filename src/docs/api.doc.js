@@ -362,6 +362,63 @@ return output;
 
 }
 
+// WebSocket endpoints
+// -------------------
+//
+// ### WebSocket /event/:id - Post updates
+//
+// e.g. wss://dev.unfold.online/api/event/:id
+//
+// A JSON stream that emits updates of the posts. This includes creation of new
+// posts ('created') and update of existing posts ('updated'), e.g. when the
+// scraper has obtained new data for the post.
+//
+// Example of a message:
+//
+// Field | Type | Description
+// ------|------|-------------
+// resource | String | "post"
+// type | String | "created" / "updated"
+// data | Object | Contents of the post
+//
+// ```json
+// {
+//     "resource": "post",
+//     "type": "created",
+//     "data": {
+//         "data": null,
+//         "tags": [],
+//         "id": "13",
+//         "caption": "Hate you",
+//         "eventId": "6",
+//         "updatedAt": "2016-03-31T14:14:44.910Z",
+//         "createdAt": "2016-03-31T14:14:44.910Z",
+//         "authorId": null
+//     }
+// }
+// ```
+//
+// ```json
+// {
+//     "resource": "post",
+//     "type": "updated",
+//     "data": {
+//         "data": {
+//             "url": "http://www.example.com"
+//         },
+//         "tags": [],
+//         "id": "14",
+//         "caption": "Hate you",
+//         "eventId": "6",
+//         "updatedAt": "2016-03-31T14:14:44.943Z",
+//         "createdAt": "2016-03-31T14:14:44.926Z",
+//         "authorId": null
+//     }
+// }
+// ```
+
+//
+
 export default main;
 
 if (require.main === module) {
