@@ -19,7 +19,6 @@
 
         "block-scoped-var": 1,
         "consistent-return": 1,
-        "dot-notation": 1,
         "eqeqeq": 1,
         "guard-for-in": 1,
         "no-caller": 1,

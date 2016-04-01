@@ -30,6 +30,14 @@ export const Config = {
         appSecret: process.env.FACEBOOK_APP_SECRET,
     },
 
+    twitter: {
+        consumerKey: process.env.TWITTER_CONSUMER_KEY,
+        consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
+        // TODO: eventually remove access token
+        accessToken: process.env.TWITTER_ACCESS_TOKEN,
+        accessTokenSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+    },
+
     testMode() {
         this.ip = process.env.TEST_IP || '127.0.0.1';
         this.port = process.env.TEST_PORT || 3001;

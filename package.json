@@ -25,6 +25,7 @@
     "express": "^4.13.4",
     "iframely": "^0.9.3",
     "joi": "^8.0.5",
+    "jsonparse": "^1.2.0",
     "jsonwebtoken": "^5.5.4",
     "kue": "^0.10.5",
     "language-tags": "^1.0.5",
