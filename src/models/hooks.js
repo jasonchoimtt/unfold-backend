@@ -1,46 +1,28 @@
 /**
  * Hooks for implementing the event stream.
  */
-import assert from 'assert';
 import { Publisher, Channels } from '../structs/stream';
+import { catchToLog } from '../utils';
 
 import { Post } from './post';
+import { User } from './user';
 
 
-/**
- * Removes return value of decorated function so that the function does not
- * return (presumably) a promise.
- */
-function noWait(asyncFn) {
-    return function(...args) {
-        asyncFn(...args);
-    };
-}
+const publishToStream = catchToLog('hooks-publish-stream')(
+    async function publishToStream(type, instance) {
+        if (!instance.eventId || typeof instance.author === 'undefined') {
+            await instance.reload({
+                include: [{ model: User, as: 'author' }],
+            });
+        }
 
-Post.addHook('afterCreate', 'publishToStream', noWait(async instance => {
-    if (!instance.eventId)
-        await instance.reload();
+        await Publisher.publish(Channels.event(instance.eventId), JSON.stringify({
+            resource: 'post',
+            type: type,
+            data: instance,
+        }));
+    }
+);
 
-    let event = instance.eventId;
-    assert(event);
-
-    await Publisher.publish(Channels.event(event), JSON.stringify({
-        resource: 'post',
-        type: 'created',
-        data: instance,
-    }));
-}));
-
-Post.addHook('afterUpdate', 'publishToStream', noWait(async instance => {
-    if (!instance.eventId)
-        await instance.reload();
-
-    let event = instance.eventId;
-    assert(event);
-
-    await Publisher.publish(Channels.event(event), JSON.stringify({
-        resource: 'post',
-        type: 'updated',
-        data: instance,
-    }));
-}));
+Post.addHook('afterCreate', 'publishToStream', publishToStream.bind(null, 'created'));
+Post.addHook('afterUpdate', 'publishToStream', publishToStream.bind(null, 'updated'));

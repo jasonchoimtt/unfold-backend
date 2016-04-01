@@ -29,8 +29,13 @@ export const logger = {
             let date = moment().format('MMM D HH:mm:ss');
             let left = `<${priority}> ${date} ${hostname} ${tag}: `;
             let out = messages
-                .map(x => typeof x === 'string'
-                    ? x : util.inspect(x, { depth: null }))
+                .map(x => {
+                    if (typeof x === 'string')
+                        return x;
+                    if (x instanceof Error && x.stack)
+                        return x;
+                    return util.inspect(x, { depth: null });
+                })
                 .join(' ')
                 .split('\n')
                 .map(x => left + x)
@@ -64,3 +69,16 @@ _.extend(logger, logger.levels);
 _.forEach(logger.levels, (level, key) => {
     logger[key.toLowerCase()] = logger.log.bind(logger, level);
 });
+
+/**
+ * Decorator to call the async function asynchronously (i.e. does not return a
+ * promise) and catch the error to the logger.
+ */
+export function catchToLog(tag) {
+    return function(fn) {
+        return function(...args) {
+            fn(...args)
+                .catch(logger.error.bind(logger, tag));
+        };
+    };
+}
