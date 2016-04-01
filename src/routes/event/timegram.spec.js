@@ -29,4 +29,22 @@ describe('Timegram endpoint', function() {
             expect(resp.data.timegram[23 - hour]).to.have.property('frequency', 1);
         });
     });
+
+    it('delivers a sparse timegram on request', async function() {
+        let resp = await request.get(`/api/event/${event.id}/timegram`, {
+            params: {
+                begin: new Date(2014, 9, 26, 0),
+                end: new Date(2014, 9, 27, 0),
+                resolution: 3600,
+                sparse: true,
+            },
+        });
+
+        expect(resp.data.timegram).to.have.length(3);
+        [19, 20, 21].map(hour => {
+            expect(resp.data.timegram[21 - hour])
+                .to.have.property('begin', new Date(2014, 9, 26, hour).toJSON());
+            expect(resp.data.timegram[21 - hour]).to.have.property('frequency', 1);
+        });
+    });
 });

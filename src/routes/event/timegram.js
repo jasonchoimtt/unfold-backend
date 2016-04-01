@@ -24,6 +24,7 @@ const querySchema = Joi.object({
     begin: Joi.date().iso(),
     end: Joi.date().iso(),
     resolution: Joi.number().integer().min(3600).default(86400),
+    sparse: Joi.boolean().default(false),
 }).required();
 
 router.get('/:id/timegram', catchError(async function(req, res) {
@@ -31,7 +32,7 @@ router.get('/:id/timegram', catchError(async function(req, res) {
     if (!event)
         throw new NotFoundError();
 
-    let { begin, end, resolution } = validateOrThrow(req.query, querySchema);
+    let { begin, end, resolution, sparse } = validateOrThrow(req.query, querySchema);
 
     begin = _.max([begin, event.startedAt].filter(x => x));
     end = _.min([end, event.endedAt].filter(x => x)) || new Date();
@@ -43,7 +44,8 @@ router.get('/:id/timegram', catchError(async function(req, res) {
 
     let count = (unixEndBound - unixBegin) / resolution;
 
-    assert(count < 24 * 365 * 3); // At most three years at finest resolution to prevent DOS
+    // Return data of at most three years at finest resolution to prevent out of memory
+    assert(sparse || count < 24 * 365 * 3);
 
     let frequencies = await event.getPosts({
         attributes: [
@@ -62,15 +64,28 @@ router.get('/:id/timegram', catchError(async function(req, res) {
     // Post objects do not have frequency and bucket getters =(
     frequencies = frequencies.map(x => x.toJSON());
 
-    let histogram = _.range(count).map(bucket => ({
-        begin: dateOf(unixBegin + resolution * bucket),
-        end: dateOf(Math.min(unixBegin + resolution * (bucket + 1), unixEnd)),
-        frequency: 0,
-    }));
-    frequencies.forEach(record => { // bucket from Postgres is 1-based
-        histogram[record.bucket - 1].frequency = parseInt(record.frequency, 10);
+    let histogram = [];
+
+    const createEntry = (index, frequency = 0) => ({
+        begin: dateOf(unixEndBound - resolution * (index + 1)),
+        end: dateOf(Math.min(unixEndBound - resolution * index, unixEnd)),
+        frequency: frequency,
     });
-    histogram.reverse();
+
+    frequencies.forEach(record => {
+        let index = count - record.bucket;
+        // bucket from Postgres is 1-based
+        if (!sparse) {
+            while (histogram.length < index)
+                histogram.push(createEntry(histogram.length));
+        }
+        histogram.push(createEntry(index, parseInt(record.frequency, 10)));
+    });
+
+    if (!sparse) {
+        while (histogram.length < count)
+            histogram.push(createEntry(histogram.length));
+    }
 
     return res.json({
         timegram: histogram,
