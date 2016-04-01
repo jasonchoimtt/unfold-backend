@@ -9,7 +9,7 @@ describe('Event WebSocket', function() {
 
     it('receives post creation events', async function() {
         let client = new WebSocketTestClient();
-        let conn = await client.connect(`/event/${event.id}`);
+        let conn = await client.connect(`/ws/event/${event.id}`);
 
         await event.createPost({ caption: 'Hate you' });
 
@@ -26,7 +26,7 @@ describe('Event WebSocket', function() {
         let post = await event.createPost({ caption: 'Hate you' });
 
         let client = new WebSocketTestClient();
-        let conn = await client.connect(`/event/${event.id}`);
+        let conn = await client.connect(`/ws/event/${event.id}`);
 
         await post.update({ data: { url: 'http://www.example.com' } });
 

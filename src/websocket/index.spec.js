@@ -4,7 +4,7 @@ import { WebSocketTestClient } from './spec-utils';
 describe('WebSocket', function() {
     it('works', async function() {
         let client = new WebSocketTestClient();
-        await client.connect('/api');
+        await client.connect('/ws');
 
         expect(await client.nextJSON()).to.have.property('data', 'It works!');
 

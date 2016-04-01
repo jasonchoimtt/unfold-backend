@@ -365,9 +365,15 @@ return output;
 // WebSocket endpoints
 // -------------------
 //
+// WebSocket endpoints have a different base URL:
+//
+// ```
+// wss://dev.unfold.online/ws
+// ```
+//
 // ### WebSocket /event/:id - Post updates
 //
-// e.g. wss://dev.unfold.online/api/event/:id
+// e.g. wss://dev.unfold.online/ws/event/:id
 //
 // A JSON stream that emits updates of the posts. This includes creation of new
 // posts ('created') and update of existing posts ('updated'), e.g. when the
