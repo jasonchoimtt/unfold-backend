@@ -1,7 +1,7 @@
 import { WebSocketApp } from './base';
 import { connection as WebSocketConnection } from 'websocket';
 
-import { eventStream } from './event';
+import { eventStream, eventTickStream } from './event';
 
 
 export const app = new WebSocketApp();
@@ -18,6 +18,7 @@ app.use('/ws', function(req, __, next) {
 });
 
 app.use('/ws' + eventStream.pattern, eventStream);
+app.use('/ws' + eventTickStream.pattern, eventTickStream);
 
 app.use(function errorHandler(err, req, __, next) {
     if (err.status && err.visible) {

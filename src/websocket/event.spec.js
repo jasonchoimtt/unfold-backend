@@ -40,6 +40,38 @@ describe('Event WebSocket', function() {
         conn.close();
     });
 
+    it('receives tick creation events', async function() {
+        let client = new WebSocketTestClient();
+        let conn = await client.connect(`/ws/event/${event.id}/ticks`);
+
+        await event.createTick({ data: { title: 'Hate you' } });
+
+        let data = await client.nextJSON();
+
+        expect(data).to.have.property('resource', 'tick');
+        expect(data).to.have.property('type', 'created');
+        expect(data).to.have.deep.property('data.data.title', 'Hate you');
+
+        conn.close();
+    });
+
+    it('receives tick update events', async function() {
+        let tick = await event.createTick({ data: { title: 'Hate you' } });
+
+        let client = new WebSocketTestClient();
+        let conn = await client.connect(`/ws/event/${event.id}/ticks`);
+
+        await tick.update({ data: { url: 'http://www.example.com' } });
+
+        let data = await client.nextJSON();
+
+        expect(data).to.have.property('resource', 'tick');
+        expect(data).to.have.property('type', 'updated');
+        expect(data).to.have.deep.property('data.data.url', 'http://www.example.com');
+
+        conn.close();
+    });
+
     it('404s when event is not found', async function() {
         let client = new WebSocketTestClient();
         await expect(client.connect('/event/ridiculous'))

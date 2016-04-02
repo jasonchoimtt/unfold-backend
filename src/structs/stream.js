@@ -79,4 +79,8 @@ export const Channels = {
     event(id) {
         return `event_${id}`;
     },
+
+    eventTick(id) {
+        return `event_${id}_ticks`;
+    },
 };
