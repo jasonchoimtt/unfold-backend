@@ -42,7 +42,8 @@ export const Config = {
         this.ip = process.env.TEST_IP || '127.0.0.1';
         this.port = process.env.TEST_PORT || 3001;
         this.appEnv = ['rest', 'websocket'];
-        this.logLevel = 'WARNING';
+        if (!process.env.LOG_LEVEL)
+            this.logLevel = 'WARNING';
 
         process.env.NODE_ENV = 'testing';
     },

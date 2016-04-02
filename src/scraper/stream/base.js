@@ -1,5 +1,6 @@
 import EventEmitter from 'events';
 import { Event } from '../../models';
+import { logger } from '../../utils';
 
 
 export class ScraperDaemon extends EventEmitter {
@@ -8,6 +9,8 @@ export class ScraperDaemon extends EventEmitter {
         this.config = config;
         this.eventId = eventId;
         this.event = null;
+
+        this.TAG = `scraper-stream-${this.constructor.name.toLowerCase()}-${this.eventId}`;
     }
 
     start() {
@@ -23,7 +26,10 @@ export class ScraperDaemon extends EventEmitter {
 
                 return promise;
             })
-            .catch(this.emit.bind(this, 'error')); // async
+            .catch(err => {
+                this.emit('error', err);
+                logger.error(this.TAG, err);
+            }); // async
 
         return this;
     }

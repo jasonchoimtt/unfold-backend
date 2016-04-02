@@ -6,13 +6,11 @@ import { logger } from '../../utils';
 import { PostData } from '../../models/post-data';
 
 
-const TAG = 'scraper-passive-twitter';
-
 export class Twitter extends ScraperDaemon {
-    get TAG() {
-        return TAG;
+    constructor(eventId, config) {
+        super(eventId, config);
+        this.pending = [];
     }
-
     async resolveScreenNames(users) {
         if (!users.length)
             return [];
@@ -36,7 +34,6 @@ export class Twitter extends ScraperDaemon {
             return data.map(x => x.id_str);
 
         } catch (err) {
-            console.log(require('util').inspect(err, { depth: null }));
             if (!(err instanceof Error) && err.status === 404) {
                 logger.warning(this.TAG, 'No user found');
                 return [];
@@ -48,13 +45,11 @@ export class Twitter extends ScraperDaemon {
     }
 
     async processPost(raw) {
-        console.log(raw);
-
         let image = _.get(raw, 'entities.media[0]');
-        if (image && image.type !== 'image')
+        if (image && image.type !== 'photo')
             image = null;
 
-        console.log({
+        let result = {
             // TODO: special
             rel: image ? PostData.IMAGE : PostData.TEXT,
 
@@ -74,7 +69,13 @@ export class Twitter extends ScraperDaemon {
             author: raw.user.name,
             authorImage: raw.user.profile_image_url_https,
             createdAt: new Date(raw.created_at),
-        });
+        };
+
+        logger.info(this.TAG, `Collected link ${result.url}\n`, result);
+
+        let tick = await this.event.createTick({ data: result });
+
+        logger.info(this.TAG, `Saved link ${result.url} as tick #${tick.id}`);
     }
 
     async run() {
@@ -97,6 +98,15 @@ export class Twitter extends ScraperDaemon {
         });
         logger.info(this.TAG, 'Connected to streaming endpoint');
 
+        this.stop = () => {
+            logger.info(this.TAG, 'Stop signal received, exiting');
+            stream.close();
+        };
+        if (this.stopping) {
+            this.stop();
+            return;
+        }
+
         await new Promise((resolve, reject) => {
             let self = this;
             let errorHandler = err => {
@@ -108,8 +118,14 @@ export class Twitter extends ScraperDaemon {
             parser.onError = errorHandler;
             parser.onValue = function(value) {
                 if (this.stack.length === 0) {
-                    self.processPost(value)
+                    let promise = self.processPost(value)
                         .catch(errorHandler); // async
+
+                    self.pending.push(promise);
+
+                    promise
+                        .catch(() => {})
+                        .then(() => { _.pull(self.pending, promise); });
                 }
             };
 
@@ -121,6 +137,12 @@ export class Twitter extends ScraperDaemon {
             });
         });
 
+        await Promise.all(this.pending);
+
         logger.info(this.TAG, 'Connection closed');
+    }
+
+    stop() {
+        this.stopping = true;
     }
 }

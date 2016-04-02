@@ -3,6 +3,7 @@ import { sequelize } from './sequelize';
 
 import { Role } from './role';
 import { Post } from './post';
+import { Tick } from './tick';
 import { Source } from './source';
 
 
@@ -98,6 +99,15 @@ Event.hasMany(Role, {
 
 Event.hasMany(Post, {
     as: 'posts',
+    foreignKey: {
+        name: 'eventId',
+        allowNull: false,
+    },
+    onDelete: 'CASCADE',
+});
+
+Event.hasMany(Tick, {
+    as: 'ticks',
     foreignKey: {
         name: 'eventId',
         allowNull: false,
