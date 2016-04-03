@@ -94,12 +94,18 @@ client.stream = async function stream(config) {
     let resolve, reject, promise = new Promise((s, j) => { resolve = s; reject = j; });
     let req = https.request({
         hostname, path, method, headers,
-    }, (stream, socket) => {
+    }, stream => {
         // Nowhere else to put this, so...
         stream.close = function close() {
             req.abort();
         };
-        resolve(stream);
+        // Let's forget about redirection
+        if (stream.statusCode < 200 || stream.statusCode >= 300) {
+            req.abort();
+            reject(stream);
+        } else {
+            resolve(stream);
+        }
     });
 
     req.on('error', reject);

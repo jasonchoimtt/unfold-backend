@@ -34,7 +34,7 @@ export const logger = {
                         return x;
                     if (x instanceof Error && x.stack)
                         return x;
-                    return util.inspect(x, { depth: null });
+                    return util.inspect(x, { depth: 5 });
                 })
                 .join(' ')
                 .split('\n')

@@ -68,15 +68,15 @@ describe('Event sources endpoint', function() {
         resp = await requestAuth.patch(`/api/event/${event.id}/sources`, [
             {
                 type: 'twitter',
-                config: { hashtags: ['MakeHKGreatAgain'] },
+                config: { users: ['realomama'], hashtags: ['MakeHKGreatAgain'] },
             },
         ]);
 
         expect(resp.data).to.have.lengthOf(1).and
             .include.something.that.satisfies(
                 x => x.type === 'twitter' &&
-                x.config.hashtags.indexOf('MakeHKGreatAgain') !== -1 &&
-                x.config.users.length === 0
+                x.config.users.indexOf('realomama') !== -1 &&
+                x.config.hashtags.indexOf('MakeHKGreatAgain') !== -1
             );
 
         resp = await requestAuth.patch(`/api/event/${event.id}/sources`, [

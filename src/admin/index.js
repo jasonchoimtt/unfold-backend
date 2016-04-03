@@ -5,12 +5,14 @@ import express from 'express';
 
 import { errorHandler } from '../errors';
 import { router as kue } from './kue';
+import { router as scraper } from './scraper';
 
 
 // /admin router
 const router = express.Router();
 
 router.use('/kue', kue);
+router.use('/scraper', scraper);
 
 // Catch-all error handler
 router.use(errorHandler);
