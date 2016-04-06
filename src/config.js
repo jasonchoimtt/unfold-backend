@@ -38,6 +38,12 @@ export const Config = {
         accessTokenSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
     },
 
+    // Azure DataMarket, for Microsoft Translator API
+    dataMarket: {
+        clientId: process.env.DATA_MARKET_CLIENT_ID,
+        clientSecret: process.env.DATA_MARKET_CLIENT_SECRET,
+    },
+
     testMode() {
         this.ip = process.env.TEST_IP || '127.0.0.1';
         this.port = process.env.TEST_PORT || 3001;

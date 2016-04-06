@@ -42,6 +42,7 @@
     "sinon": "^1.17.3",
     "sinon-chai": "^2.8.0",
     "websocket": "^1.0.22",
+    "xml2js": "^0.4.16",
     "yargs": "^4.3.2"
   },
   "devDependencies": {

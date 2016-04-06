@@ -64,8 +64,8 @@ export async function createTestUser(id = 'test_user', options) {
 
 export function withCreateTestUser(id, callback, options) {
     if (typeof id === 'function') {
-        callback = id;
         options = callback;
+        callback = id;
     }
     if (typeof id !== 'string')
         id = 'test_user';
