@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 import _ from 'lodash';
 import { request,
     createTestUser, withCreateTestUser,
@@ -137,7 +138,7 @@ describe('Timeline endpoint', function() {
             ],
             limit: 1,
         }))[0];
-        expect(post).to.be.ok; // eslint-disable-line
+        expect(post).to.be.ok;
         await PostTranslation.upsert({
             language: 'zh-Hant',
             content: '你好嗎？我很好。',
@@ -179,7 +180,7 @@ describe('Timeline endpoint', function() {
             limit: 1,
         }))[0];
 
-        expect(post).to.be.ok; // eslint-disable-line
+        expect(post).to.be.ok;
         let resp = await requestAuth.put(`/api/event/${event.id}/timeline/${post.id}`, {
             translations: {
                 'en-hk': {

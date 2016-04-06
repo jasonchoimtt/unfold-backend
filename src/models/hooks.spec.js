@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 import sinon from 'sinon';
 import { Subscriber, Channels } from '../structs/stream';
 import { withCreateEvent } from '../spec-utils';
@@ -19,7 +20,7 @@ describe('Model hooks', function() {
         });
 
         await deferred;
-        expect(subs).to.have.been.calledOnce; // eslint-disable-line
+        expect(subs).to.have.been.calledOnce;
 
         let e = JSON.parse(subs.firstCall.args[0]);
         expect(e).to.have.property('resource', 'post');

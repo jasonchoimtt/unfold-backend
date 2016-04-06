@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 import sinon from 'sinon';
 import * as msTranslator from '../services/ms-translator';
 import { request, withCreateTestUser } from '../spec-utils';
@@ -27,11 +28,11 @@ describe('Translate endpoint', function() {
             content: 'Hello, world!',
         });
 
-        expect(msTranslator.translate).to.have.been.calledOnce; // eslint-disable-line
+        expect(msTranslator.translate).to.have.been.calledOnce;
         let [content, options] = msTranslator.translate.firstCall.args;
         expect(content).to.equal('Hello, world!');
         expect(options).to.have.property('to', 'zh-hant');
-        expect(options).to.have.property('from').which.is.not.ok; // eslint-disable-line
+        expect(options).to.have.property('from').which.is.not.ok;
 
         expect(resp.data).to.have.property('from', 'en');
         expect(resp.data).to.have.property('to', 'zh-hant');

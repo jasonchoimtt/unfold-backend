@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 /**
  * Unit testing for the dispatcher.
  */
@@ -16,14 +17,14 @@ describe('Scraper dispatcher', function() {
             .to.deep.equal({ keyword: 'cats' });
         matches('https://www.google.com/search/cats')
             .to.deep.equal({ keyword: 'cats' });
-        matches('//www.google.com/search/cats').not.to.be.ok; // eslint-disable-line
+        matches('//www.google.com/search/cats').not.to.be.ok;
 
         route = new Route('http://fb.me/');
 
-        matches('http://fb.me').to.be.ok; // eslint-disable-line
-        matches('http://fb.me/').to.be.ok; // eslint-disable-line
-        matches('https://fb.me').not.to.be.ok; // eslint-disable-line
-        matches('http://fb.me:80').not.to.be.ok; // eslint-disable-line
+        matches('http://fb.me').to.be.ok;
+        matches('http://fb.me/').to.be.ok;
+        matches('https://fb.me').not.to.be.ok;
+        matches('http://fb.me:80').not.to.be.ok;
 
         route = new Route('//:blog.blogspot.:tld/:year/:post');
 
@@ -31,22 +32,22 @@ describe('Scraper dispatcher', function() {
             .to.deep.equal({ blog: 'unfold', tld: 'hk', year: '2016', post: 'welcome' });
         matches('https://unfold.blogspot.hk/2016/welcome?to=unfold')
             .to.deep.equal({ blog: 'unfold', tld: 'hk', year: '2016', post: 'welcome' });
-        matches('http://duarte.blogspot.com/sth/funny/really').not.to.be.ok; // eslint-disable-line
+        matches('http://duarte.blogspot.com/sth/funny/really').not.to.be.ok;
 
         route = new Route('http://localhost/:path+');
         matches('http://localhost/hello/world')
             .to.deep.equal({ path: 'hello/world' });
-        matches('http://localhost/').not.to.be.ok; // eslint-disable-line
+        matches('http://localhost/').not.to.be.ok;
 
         route = new Route('http://127.0.0.1/:path*');
-        matches('http://127.0.0.1:80/').not.to.be.ok; // eslint-disable-line
+        matches('http://127.0.0.1:80/').not.to.be.ok;
         matches('http://127.0.0.1/').to.deep.equal({});
         matches('http://127.0.0.1/haha/yaya')
             .to.deep.equal({ path: 'haha/yaya' });
 
         // Catch all
         route = new Route('//:domain+/:path*');
-        matches('http://hello-world.online/').to.be.ok; // eslint-disable-line
+        matches('http://hello-world.online/').to.be.ok;
     });
 
     let noop = async () => {};
@@ -54,14 +55,14 @@ describe('Scraper dispatcher', function() {
     it('throws on no route', async function() {
         let dispatcher = new Dispatcher();
         await expect(dispatcher.dispatch('http://example.com/non-sense'))
-            .to.be.rejected; // eslint-disable-line
+            .to.be.rejected;
     });
 
     it('throws on missing route', async function() {
         let dispatcher = new Dispatcher();
         dispatcher.use('//non-sense.org/', noop);
         await expect(dispatcher.dispatch('http://example.com/non-sense'))
-            .to.be.rejected; // eslint-disable-line
+            .to.be.rejected;
     });
 
     it('resolves when dispatching is done', async function() {
@@ -76,7 +77,7 @@ describe('Scraper dispatcher', function() {
         dispatcher.use('//localhost/', spy);
 
         expect(await dispatcher.dispatch('http://localhost/')).to.equal('result!');
-        expect(spy).to.have.been.calledOnce; // eslint-disable-line
+        expect(spy).to.have.been.calledOnce;
     });
 
     it('provides the URL params', async function() {
@@ -85,7 +86,7 @@ describe('Scraper dispatcher', function() {
         dispatcher.use('http://:blog.blogspot.hk/:post', spy);
 
         await dispatcher.dispatch('http://jason.blogspot.hk/awesome-stuff?sth=fun');
-        expect(spy).to.have.been.calledOnce; // eslint-disable-line
+        expect(spy).to.have.been.calledOnce;
         expect(spy.args[0][0]).to.have.property('params').deep.equal({
             blog: 'jason',
             post: 'awesome-stuff',
@@ -100,8 +101,8 @@ describe('Scraper dispatcher', function() {
         dispatcher.use('https://localhost/', spy2);
 
         await dispatcher.dispatch('https://localhost/');
-        expect(spy1).to.have.been.calledOnce; // eslint-disable-line
-        expect(spy2).not.to.have.been.called; // eslint-disable-line
+        expect(spy1).to.have.been.calledOnce;
+        expect(spy2).not.to.have.been.called;
 
         dispatcher = new Dispatcher();
         spy1 = sinon.spy(); spy2 = sinon.spy();
@@ -109,8 +110,8 @@ describe('Scraper dispatcher', function() {
         dispatcher.use('//localhost/', spy1);
 
         await dispatcher.dispatch('https://localhost/');
-        expect(spy1).not.to.have.been.called; // eslint-disable-line
-        expect(spy2).to.have.been.calledOnce; // eslint-disable-line
+        expect(spy1).not.to.have.been.called;
+        expect(spy2).to.have.been.calledOnce;
     });
 
     it('composes multiple dispatchers', async function() {
@@ -124,7 +125,7 @@ describe('Scraper dispatcher', function() {
         dispatcher.use(dispatcher2);
 
         await dispatcher.dispatch('http://fb.me/');
-        expect(spy1).not.to.have.been.called; // eslint-disable-line
-        expect(spy2).to.have.been.called; // eslint-disable-line
+        expect(spy1).not.to.have.been.called;
+        expect(spy2).to.have.been.called;
     });
 });

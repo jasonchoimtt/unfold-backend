@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 import { request, createTestUser } from '../spec-utils';
 import { User } from '../models';
 
@@ -112,7 +113,7 @@ describe('User endpoint', function() {
     });
 
     it('is case-insensitive in displaying profile', async function() {
-        expect(await request.get('/api/user/TEST_user')).to.be.ok; // eslint-disable-line
+        expect(await request.get('/api/user/TEST_user')).to.be.ok;
     });
 
     it('displays a complete private user profile', async function() {

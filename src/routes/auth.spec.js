@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 import { request } from '../spec-utils';
 import { User } from '../models';
 import { parse } from '../auth';
@@ -21,8 +22,8 @@ describe('Authentication endpoint', function() {
             username: 'auth_test',
             password: 'test_pwd',
         });
-        expect(resp.data.token).not.to.be.null; // eslint-disable-line
-        expect(resp.data.exp).not.to.be.null; // eslint-disable-line
+        expect(resp.data.token).not.to.be.null;
+        expect(resp.data.exp).not.to.be.null;
     });
 
     it('rejects a non-existent user', async function() {
@@ -51,7 +52,7 @@ describe('Authentication endpoint', function() {
         resp = await request.post('api/auth/', {
             token: token,
         });
-        expect(resp.data.token).not.to.be.null; // eslint-disable-line
+        expect(resp.data.token).not.to.be.null;
         expect(resp.data.token).not.to.equal(token);
     });
 
@@ -87,6 +88,6 @@ describe('Authentication endpoint', function() {
 
         let session = await parse(resp.data.token);
         expect(session.user.id).to.equal('auth_test');
-        expect(session.user.isAdmin).to.be.true; // eslint-disable-line
+        expect(session.user.isAdmin).to.be.true;
     });
 });

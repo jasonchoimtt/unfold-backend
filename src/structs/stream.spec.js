@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 import sinon from 'sinon';
 import { Subscriber, Publisher } from './stream';
 
@@ -8,14 +9,14 @@ describe('Redis stream', function() {
 
         await Subscriber.subscribe('test_stream', subs);
 
-        expect(subs).not.to.have.been.called; // eslint-disable-line
+        expect(subs).not.to.have.been.called;
 
         let message = JSON.stringify({ data: 'It works!' });
 
         await Publisher.publish('test_stream', message);
 
         await deferred;
-        expect(subs).to.have.been.calledOnce; // eslint-disable-line
+        expect(subs).to.have.been.calledOnce;
         expect(subs.firstCall.args[0]).to.equal(message);
     });
 });

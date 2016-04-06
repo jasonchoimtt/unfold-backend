@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 import { withCreateEvent } from '../../spec-utils';
 
 
@@ -86,6 +87,6 @@ describe('Event sources endpoint', function() {
             },
         ]);
 
-        expect(resp.data).to.be.empty; // eslint-disable-line
+        expect(resp.data).to.be.empty;
     });
 });

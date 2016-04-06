@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 import sinon from 'sinon';
 import _ from 'lodash';
 import { client } from './client';
@@ -87,11 +88,11 @@ describe('Twitter stream scraper', function() {
                 .on('close', resolve);
         });
 
-        expect(client.defaults.adapter).to.have.been.calledOnce; // eslint-disable-line
+        expect(client.defaults.adapter).to.have.been.calledOnce;
         expect(client.defaults.adapter.firstCall.args[2])
             .to.have.deep.property('params.screen_name').which.equal('realdonaldjump');
 
-        expect(client.stream).to.have.been.calledOnce; // eslint-disable-line
+        expect(client.stream).to.have.been.calledOnce;
         expect(client.stream.firstCall.args[0])
             .to.have.deep.property('params.follow').which.equal('19998765');
         expect(client.stream.firstCall.args[0])
@@ -99,7 +100,7 @@ describe('Twitter stream scraper', function() {
 
         let ticks = await event.getTicks();
         let first = _.find(ticks, x => x.data.url.match(/992384786618748719/));
-        expect(first).to.be.ok; // eslint-disable-line
+        expect(first).to.be.ok;
 
         first = first.toJSON();
         expect(first.data).to.containSubset({
@@ -113,7 +114,7 @@ describe('Twitter stream scraper', function() {
         });
 
         let second = _.find(ticks, x => x.data.url.match(/992384786618748720/));
-        expect(second).to.be.ok; // eslint-disable-line
+        expect(second).to.be.ok;
 
         second = second.toJSON();
         expect(second.data).to.containSubset({
