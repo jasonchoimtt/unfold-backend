@@ -5,14 +5,14 @@ import { BadRequestError } from '../errors';
 
 
 /**
- * Validates an IETF language tag with only language and region.
- * Returns a properly formated language code (zh-HK), or null.
+ * Validates an IETF language tag.
+ * Returns a properly formated language code (e.g. zh-Hans), or null.
  *
  * See https://en.wikipedia.org/wiki/IETF_language_tag .
  */
 export function validateLanguageCode(code) {
     let tag = languageTags(code);
-    return tag.valid() && !tag.script() ? tag.format() : null;
+    return tag.valid() ? code.trim().toLowerCase() : null;
 }
 
 export function joiLanguageCode() {

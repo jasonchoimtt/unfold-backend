@@ -2,6 +2,7 @@ import _ from 'lodash';
 import { request,
     createTestUser, withCreateTestUser,
     withCreateEvent, withCreatePosts } from '../../spec-utils';
+import { PostTranslation } from '../../models';
 import { queue } from '../../structs/queue';
 
 describe('Timeline endpoint', function() {
@@ -127,5 +128,67 @@ describe('Timeline endpoint', function() {
                 .include({ status: 400 }).and
                 .have.deep.property('data.error.message')
                     .which.includes('caption').and.includes('data.url');
+    });
+
+    it('returns an available translation on demand', async function() {
+        let post = (await event.getPosts({
+            order: [
+                ['createdAt', 'DESC'],
+            ],
+            limit: 1,
+        }))[0];
+        expect(post).to.be.ok; // eslint-disable-line
+        await PostTranslation.upsert({
+            language: 'zh-Hant',
+            content: '你好嗎？我很好。',
+            postId: post.id,
+        });
+
+        let resp = await request.get(`/api/event/${event.id}/timeline`, {
+            params: {
+                language: 'zh-hant',
+            },
+        });
+
+        expect(resp.data.posts).to.have.length.at.least(1);
+        expect(resp.data.posts[0]).to.have.property('translations')
+            .which.has.property('zh-hant').which.has.property('content', '你好嗎？我很好。');
+    });
+
+    it('returns null for unavailable translations', async function() {
+        let resp = await request.get(`/api/event/${event.id}/timeline`, {
+            params: {
+                language: 'zh-hans',
+            },
+        });
+
+        expect(resp.data.posts).to.have.length.at.least(1);
+        expect(resp.data.posts[0]).to.have.property('translations');
+
+        let translations = resp.data.posts[0].translations;
+        expect(translations).to.have.property('zh-hans', null);
+        expect(translations).not.to.have.property('zh-hant');
+    });
+
+    // TODO: test using translator role
+    it('creates or updates a translation', async function() {
+        let post = (await event.getPosts({
+            order: [
+                ['createdAt', 'DESC'],
+            ],
+            limit: 1,
+        }))[0];
+
+        expect(post).to.be.ok; // eslint-disable-line
+        let resp = await requestAuth.put(`/api/event/${event.id}/timeline/${post.id}`, {
+            translations: {
+                'en-hk': {
+                    content: 'Hello, World!',
+                },
+            },
+        });
+
+        expect(resp.data).to.have.property('translations')
+            .which.has.property('en-hk').which.has.property('content', 'Hello, World!');
     });
 });

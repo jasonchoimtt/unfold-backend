@@ -4,6 +4,7 @@ import Sequelize from 'sequelize';
 import { sequelize } from './sequelize';
 
 import { PostData } from './post-data';
+import { PostTranslation } from './post-translation';
 import { User } from './user';
 import { plainGetterFactory } from './utils';
 
@@ -25,6 +26,25 @@ export const Post = sequelize.define('post', _.assign({}, PostData.attributes, {
         defaultValue: [],
     },
 }), {
+    getterMethods: {
+        translations() {
+            return this._translations;
+        },
+    },
+    setterMethods: {
+        /**
+         * Setter method for when related PostTranslation is fetched.
+         */
+        translations(value) {
+            // use this._translations since it is not persisted in database as
+            // a field
+            this._translations = _.chain(value)
+                .map(x => [x.language, x])
+                .fromPairs()
+                .value();
+            return this._translations;
+        },
+    },
     instanceMethods: {
         get: plainGetterFactory(x =>
                 _.omitBy(x, (v, k) => k.length > 4 && k.substr(0, 4) === 'data')),
@@ -40,4 +60,13 @@ export const Post = sequelize.define('post', _.assign({}, PostData.attributes, {
 Post.belongsTo(User, {
     as: 'author',
     foreignKey: { name: 'authorId' },
+});
+
+Post.hasMany(PostTranslation, {
+    as: 'translations',
+    foreignKey: {
+        name: 'postId',
+        allowNull: false,
+    },
+    onDelete: 'CASCADE',
 });
