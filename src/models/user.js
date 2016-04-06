@@ -66,7 +66,10 @@ export const User = sequelize.define('user', {
         get: plainGetterFactory((obj, options) => {
             let attributes;
 
-            if (options.attributeSet === 'session') {
+            if (options.attributeSet === 'brief') {
+                attributes = ['id', 'name'];
+
+            } else if (options.attributeSet === 'session') {
                 attributes = ['id', 'name', 'isAdmin'];
 
             } else {

@@ -81,6 +81,18 @@ let { token } = await request('Authenticate user', `
 // Authorization: ${token}
 // ```
 
+// ### GET /user{?q} - Find user
+
+// Specify `q` to match the beginning of username.
+//
+// Eventually `q` will become a required parameter.
+/* !request Find user */
+
+await request('Find user', `
+    GET ${endpoint}/user
+    ?q=nyan
+`);
+
 // ### GET /user/:id - Access user profile
 
 /* !request Access user profile: private */

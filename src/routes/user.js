@@ -13,6 +13,10 @@ export const router = express.Router();
 
 const requiredFields = ['name'];
 
+const querySchema = Joi.object({
+    q: Joi.string().regex(/^[A-Za-z][A-Za-z0-9_]+$/, 'required').default(''),
+}).required();
+
 const updateSchema = Joi.object({
     name: Joi.string().min(1).max(255),
     profile: {
@@ -26,6 +30,19 @@ const creationSchema = updateSchema.keys({
     email: Joi.string().email().required(),
     dateOfBirth: Joi.date().iso().required(), // TODO: timezone issues
 }).requiredKeys(requiredFields);
+
+router.get('/', catchError(async function(req, res) {
+    let query = validateOrThrow(req.query, querySchema);
+
+    let users = await User.findAll({
+        where: {
+            id: { $iLike: `${query.q.replace(/_/g, '\\_')}%` },
+        },
+    });
+
+    users = users.map(u => u.get({ plain: true, attributeSet: 'brief' }));
+    res.json(users);
+}));
 
 /**
  * Registration endpoint

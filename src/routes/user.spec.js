@@ -24,6 +24,25 @@ describe('User endpoint', function() {
         });
     });
 
+    it('lists all users', async function() {
+        let resp = await request.get('/api/user');
+        expect(resp.data).to.include.something.which.has.property('id', 'test_user');
+        expect(resp.data).to.all.not.have.property('password');
+    });
+
+    it('lists users matching pattern', async function() {
+        let resp = await request.get('/api/user', {
+            params: { q: 'TEST' },
+        });
+        expect(resp.data).to.include.something.which.has.property('id', 'test_user');
+        expect(resp.data).to.all.satisfy(x => x.id.match(/^test/i));
+
+        resp = await request.get('/api/user', {
+            params: { q: 'user' },
+        });
+        expect(resp.data).to.all.not.have.property('id', 'test_user');
+    });
+
     describe('registration', function() {
         it('registers a new user', async function() {
             let resp = await request.post('/api/user', {
