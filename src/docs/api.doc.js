@@ -183,13 +183,25 @@ let samples = [
       tags: ['HK'] },
 ];
 
-await Promise.all(samples.map((body, i) => {
+let samplePosts = (await Promise.all(samples.map((body, i) => {
     return request(`Create sample post ${i}`, `
         POST ${endpoint}/event/${id}/timeline
         Authorization: ${token}
         ${JSON.stringify(body)}
     `);
-}));
+})));
+
+await request(`Create sample translation`, `
+    PUT ${endpoint}/event/${id}/timeline/${samplePosts[0].id}
+    Authorization: ${token}
+    {
+        "translations": {
+            "zh-Hant": {
+                "content": "它工作！"
+            }
+        }
+    }
+`);
 
 // ### GET /event/:id - Get event information
 
@@ -273,6 +285,8 @@ await request('Get tags in event', `
 // createdAt | Date | Time at which the post was created
 // caption | String | Content of the self-post
 // tags | String[] | A list of tags
+// data.translations | Object? | Contains the requested translations
+// data.translations[langCode].content | String | Translated text
 //
 // Link post:
 //
@@ -295,18 +309,22 @@ await request('Get tags in event', `
 // data.createdAt | Date? | Time at which the link was created
 
 
-// ### GET /event/:id/timeline{?begin,end} - Get timeline posts
+// ### GET /event/:id/timeline{?begin,end,language} - Get timeline posts
 
 // **Public.** Retrieve a subset of the posts in the timeline.
 //
 // Specify the time span using `begin` and `end`. If `end` or both are not
-// specified, up to 100 posts will be fetched in reverse chronological order.
+// specified, up to 10000 posts will be fetched in reverse chronological order.
+//
+// Specify `language` as an IETF language tag, such as `zh-Hant`, `zh-Hans` and
+// `en`, to retrieve translations. If the specified translation does not exist,
+// `translations[langCode]` will be `null`.
 //
 // Date formats are in ISO8601.
 /* !request Get timeline posts: default */
 
 await request('Get timeline posts: default', `
-    GET ${endpoint}/event/${id}/timeline
+    GET ${endpoint}/event/${id}/timeline?language=zh-Hant
 `);
 
 /* !request Get timeline posts: specify period */
@@ -334,6 +352,28 @@ await request('Create new post', `
     }
 `);
 
+// ### PUT /event/:id/timeline/:post_id - Update post
+
+// **Contributor.** Update a post in the timeline.
+//
+// Accept attributes: `translations[langCode].content`
+//
+// As a special case of our REST endpoint, other translations not specified will
+// not be destroyed.
+/* !request Update post */
+
+await request(`Update post`, `
+    PUT ${endpoint}/event/${id}/timeline/${samplePosts[0].id}
+    Authorization: ${token}
+    {
+        "translations": {
+            "zh-Hant": {
+                "content": "它真的在工作！"
+            }
+        }
+    }
+`);
+
 // /event/:id/timegram - Event timegram
 // ------------------------------------
 //
@@ -356,6 +396,31 @@ await request('Event timegram: specify period', `
     ?begin=2014-10-25T16:00:00.000Z
     &end=2014-10-26T16:00:00.000Z
     &resolution=28800
+`);
+
+// /translate - Translation service
+// --------------------------------
+//
+// ### POST /translate - Translate arbitrary text
+
+// **Authenticated.** Translate arbitrary text, to be used in translator's view.
+//
+// Language codes in https://msdn.microsoft.com/en-us/library/hh456380.aspx
+// except `zh-CHT` (use `zh-Hant`) and `zh-CHS` (use `zh-Hans`)
+// are translatable.
+//
+// `to` and `content` are required. Optionally specify `from` for the language
+// of the provided text.
+//
+/* !request Translate arbitrary text */
+
+await request('Translate arbitrary text', `
+    POST ${endpoint}/translate
+    Authorization: ${token}
+    {
+        "to": "zh-Hant",
+        "content": "Hello, world!"
+    }
 `);
 
 return output;
