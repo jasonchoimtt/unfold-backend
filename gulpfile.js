@@ -19,30 +19,33 @@ const src = 'src/**/*.js';
 var notifyServer = _.noop;
 
 // Per-file incremental build
-function doBuild(src) {
+function doBuild(src, cb) {
     return src
         .pipe(eslint())
         .pipe(eslint.format())
         .pipe(sourcemaps.init())
         .pipe(babel())
         .on('error', function(err) {
-            gutil.log(err.message || err);
             if (err.codeFrame)
-                console.log(err.codeFrame);
-            this.emit('end', err); // eslint-disable-line no-invalid-this
+                err.message = err.codeFrame;
+            cb(err);
         })
         .pipe(sourcemaps.write('.', { sourceRoot: '/src' }))
         .pipe(gulp.dest('lib'))
-        .on('end', notifyServer);
+        .on('end', notifyServer)
+        .on('end', cb);
 }
-gulp.task('build', () => {
+gulp.task('build', cb => {
     child_process.execSync('rm -rf lib');
-    return doBuild(gulp.src(src));
+    doBuild(gulp.src(src), cb);
 });
 gulp.task('dev:build', ['build'], () => {
     gulp.watch(src, e => {
         if (e.type !== 'deleted')
-            doBuild(gulp.src(e.path, { base: 'src' }));
+            doBuild(gulp.src(e.path, { base: 'src' }), function(err) {
+                if (err)
+                    gutil.log(err.message);
+            });
     });
 });
 

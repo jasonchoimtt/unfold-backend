@@ -2,6 +2,7 @@ import _ from 'lodash';
 import { NotFoundError } from '../errors';
 import { Event } from '../models';
 import { Subscriber, Channels } from '../structs/stream';
+import { StreamDaemon } from '../scraper/stream';
 import { logger } from '../utils';
 
 
@@ -28,7 +29,7 @@ function stream(resource) {
         let boundSend = conn.send.bind(conn);
 
         conn.on('error', err => {
-            logger.error(`websocket-${_.kebabCase(resource)}-stream`, err.stack || err);
+            logger.error(`websocket-${_.kebabCase(resource)}-stream`, err);
             // 'close' will also be emitted on 'error'
         });
 
@@ -37,6 +38,12 @@ function stream(resource) {
         });
 
         Subscriber.subscribe(Channels[resource](req.params.id), boundSend); // async
+
+        if (resource === 'eventTick') {
+            StreamDaemon.start(req.params.id)
+                .catch(logger.error.bind(logger, `websocket-${_.kebabCase(resource)}-stream`));
+            // async
+        }
     };
 }
 

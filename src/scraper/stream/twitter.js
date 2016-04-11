@@ -93,6 +93,7 @@ export class Twitter extends ScraperDaemon {
             params: {
                 follow: userIds.join(','),
                 track: hashtags.join(','),
+                filter_level: 'low',
             },
             oauth: oauthOptions,
         });

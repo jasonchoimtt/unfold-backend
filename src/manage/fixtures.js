@@ -36,6 +36,7 @@ export const deflateEvent = {
         let { roles } = event;
 
         // Create and login to users
+        console.log('Creating the users...');
         await Promise.all(roles.map((role, i) => {
             role.username = _.snakeCase(role.name) + suffix;
 
@@ -47,12 +48,17 @@ export const deflateEvent = {
                 email: 'test@unfold.online',
                 dateOfBirth: new Date(2000, 0, 1),
             })
+                .catch(err => {
+                    if (!err.message || !err.message.match(role.username))
+                        throw err;
+                })
                 .then(() => getTokenFor(role.username))
                 .then(token => { roles[i].token = token; });
         }));
         let owner = _.find(roles, x => x.type === 'OWNER');
 
         // Create event
+        console.log('Creating the event...');
         let eventId = (await client.post(
             'event',
             _.pick(event, 'title', 'description', 'location', 'startedAt', 'endedAt', 'timezone'),
@@ -74,6 +80,8 @@ export const deflateEvent = {
         // Create posts
         let count = 0;
         for (let post of posts) {
+            if (!post.data && post.url)
+                post.data = { url: post.url };
             await client.post(
                 `event/${eventId}/timeline`,
                 _.pick(post, 'caption', 'createdAt', 'tags', 'data'),
