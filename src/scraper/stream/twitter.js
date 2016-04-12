@@ -10,7 +10,27 @@ export class Twitter extends ScraperDaemon {
     constructor(eventId, config) {
         super(eventId, config);
         this.pending = [];
+        this.lastInvocation = Date.now();
     }
+
+    throttle() {
+        let now = Date.now();
+
+        if (now > this.lastInvocation + 2000) {
+            this.lastInvocation = now;
+            return Promise.resolve();
+
+        } else if (now > this.lastInvocation) {
+            this.lastInvocation = this.lastInvocation + 2000;
+            return new Promise(resolve => {
+                setTimeout(resolve, this.lastInvocation + 2000 - now);
+            });
+
+        } else {
+            return null;
+        }
+    }
+
     async resolveScreenNames(users) {
         if (!users.length)
             return [];
@@ -73,9 +93,17 @@ export class Twitter extends ScraperDaemon {
 
         logger.info(this.TAG, `Collected link ${result.url}\n`, result);
 
-        let tick = await this.event.createTick({ data: result });
+        let throttler = this.throttle();
 
-        logger.info(this.TAG, `Saved link ${result.url} as tick #${tick.id}`);
+        if (throttler) {
+            await throttler;
+
+            let tick = await this.event.createTick({ data: result });
+            logger.info(this.TAG, `Saved link ${result.url} as tick #${tick.id}`);
+
+        } else {
+            logger.info(this.TAG, `Dropping ${result.url} due to output throttling`);
+        }
     }
 
     async run() {
@@ -93,7 +121,6 @@ export class Twitter extends ScraperDaemon {
             params: {
                 follow: userIds.join(','),
                 track: hashtags.join(','),
-                filter_level: 'low',
             },
             oauth: oauthOptions,
         });

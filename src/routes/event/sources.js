@@ -2,10 +2,11 @@ import express from 'express';
 import _ from 'lodash';
 import Joi from 'joi';
 
-import { parseJSON, catchError, validateOrThrow } from '../../utils';
+import { parseJSON, catchError, validateOrThrow, logger } from '../../utils';
 import { NotFoundError, UnauthorizedError } from '../../errors';
 import { requireLogin } from '../../auth';
 import { Event, Role, Source, sequelize } from '../../models';
+import { StreamDaemon } from '../../scraper/stream';
 
 
 export const router = express.Router();
@@ -67,4 +68,8 @@ router.patch('/:id/sources', requireLogin, parseJSON, catchError(async function(
 
     let sources = await _event.getSources();
     res.json(sources);
+
+    StreamDaemon.stop(req.params.id)
+        .then(() => StreamDaemon.start(req.params.id))
+        .catch(logger.error.bind(logger, 'rest')); // async
 }));

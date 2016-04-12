@@ -76,7 +76,7 @@ describe('Twitter stream scraper', function() {
         client.stream.restore();
     });
 
-    it('works', async function() {
+    it.skip('works', async function() {
         let daemon = new Twitter(event.id, {
             hashtags: ['MakeAmericaLateAgain'],
             users: ['realdonaldjump'],
